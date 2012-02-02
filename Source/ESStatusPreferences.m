@@ -189,9 +189,9 @@
 										 notifyingTarget:self];
 			
 		} else if ([statusState isKindOfClass:[AIStatusGroup class]]) {
-			[ESEditStatusGroupWindowController editStatusGroup:(AIStatusGroup *)statusState
-													  onWindow:[[self view] window]
-											   notifyingTarget:self];			
+			ESEditStatusGroupWindowController *editStatusGroupWindowController = [[ESEditStatusGroupWindowController alloc] initWithStatusGroup:(AIStatusGroup *)statusState
+																																notifyingTarget:self];
+			[editStatusGroupWindowController showOnWindow:[[self view] window]];
 		}
 	}
 }
@@ -315,9 +315,9 @@
 
 - (IBAction)addGroup:(id)sender
 {
-	[ESEditStatusGroupWindowController editStatusGroup:nil
-											  onWindow:[[self view] window]
-									   notifyingTarget:self];
+	ESEditStatusGroupWindowController *editStatusGroupWindowController = [[ESEditStatusGroupWindowController alloc] initWithStatusGroup:nil
+																														notifyingTarget:self];
+	[editStatusGroupWindowController showOnWindow:[[self view] window]];
 }
 
 - (IBAction)addOrRemoveState:(id)sender

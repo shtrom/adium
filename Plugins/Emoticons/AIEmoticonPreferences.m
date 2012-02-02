@@ -44,21 +44,26 @@
 
 @implementation AIEmoticonPreferences
 
-+ (void)showEmoticionCustomizationOnWindow:(NSWindow *)parentWindow
+- (id)init
 {
-	AIEmoticonPreferences	*controller;
+	if (self = [super initWithWindowNibName:@"EmoticonPrefs"]) {
+		
+	}
 	
-	controller = [[self alloc] initWithWindowNibName:@"EmoticonPrefs"];
-	
+	return self;
+}
+
+- (void)openOnWindow:(NSWindow *)parentWindow
+{
 	if (parentWindow) {
-		[NSApp beginSheet:[controller window]
+		[NSApp beginSheet:self.window
 		   modalForWindow:parentWindow
-			modalDelegate:controller
+			modalDelegate:self
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			  contextInfo:nil];
 	} else {
-		[controller showWindow:nil];
-		[[controller window] makeKeyAndOrderFront:nil];
+		[self showWindow:nil];
+		[self.window makeKeyAndOrderFront:nil];
 		[NSApp activateIgnoringOtherApps:YES];
 	}
 }
@@ -68,7 +73,12 @@
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-    [sheet orderOut:nil];
+	[sheet orderOut:nil];
+	
+	viewIsOpen = NO;
+	
+	[adium.preferenceController unregisterPreferenceObserver:self];
+    [adium.emoticonController flushEmoticonImageCache];
 }
 
 //Configure the preference view
@@ -127,7 +137,15 @@
 - (void)windowWillClose:(id)sender
 {
 	viewIsOpen = NO;
+	
+	[super windowWillClose:sender];
+	
+	[adium.preferenceController unregisterPreferenceObserver:self];
+    [adium.emoticonController flushEmoticonImageCache];
+}
 
+- (void)dealloc
+{
 	checkCell = nil;
 	selectedEmoticonPack = nil;
 	emoticonPackPreviewControllers = nil;

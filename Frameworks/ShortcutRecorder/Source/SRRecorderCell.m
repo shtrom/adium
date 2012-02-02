@@ -16,33 +16,7 @@
 #import "SRKeyCodeTransformer.h"
 #import "SRValidator.h"
 
-@interface NSGradient (SRRecorderAdditions)
-+ (id)unifiedPressedGradientWithAlpha:(CGFloat)alpha;
-+ (id)unifiedNormalGradientWithAlpha:(CGFloat)alpha;
-@end
-
-@implementation NSGradient (SRRecorderAdditions)
-//Adapted from CTGradient
-+ (id)unifiedNormalGradientWithAlpha:(CGFloat)alpha
-{
-	static NSGradient *grad;
-	if (!grad) {
-		grad = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.75f alpha:alpha] endingColor:[NSColor colorWithCalibratedWhite:0.90f alpha:alpha]];
-	}
-	return grad;
-}
-
-+ (NSGradient *) unifiedPressedGradientWithAlpha:(CGFloat)alpha
-{
-	static NSGradient *grad;
-	if (!grad) {
-		grad = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.6f alpha:alpha] endingColor:[NSColor colorWithCalibratedWhite:0.75f alpha:alpha]];
-	}
-	return grad;
-}
-@end
-
-@interface SRRecorderCell ()
+@interface SRRecorderCell (Private)
 - (void)_privateInit;
 - (void)_createGradient;
 - (void)_setJustChanged;
@@ -139,10 +113,10 @@
 	if ([aCoder allowsKeyedCoding]) {
 		[aCoder encodeObject:[self autosaveName] forKey:@"autosaveName"];
 		[aCoder encodeObject:[NSNumber numberWithShort: keyCombo.code] forKey:@"keyComboCode"];
-		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger: keyCombo.flags] forKey:@"keyComboFlags"];
+		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger:keyCombo.flags] forKey:@"keyComboFlags"];
 	
-		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger: allowedFlags] forKey:@"allowedFlags"];
-		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger: requiredFlags] forKey:@"requiredFlags"];
+		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger:allowedFlags] forKey:@"allowedFlags"];
+		[aCoder encodeObject:[NSNumber numberWithUnsignedInteger:requiredFlags] forKey:@"requiredFlags"];
 		
 		if (hasKeyChars) {
 			[aCoder encodeObject:keyChars forKey:@"keyChars"];
@@ -160,8 +134,8 @@
 		[aCoder encodeObject: [NSNumber numberWithShort: keyCombo.code]];
 		[aCoder encodeObject: [NSNumber numberWithUnsignedInteger: keyCombo.flags]];
 		
-		[aCoder encodeObject: [NSNumber numberWithUnsignedInteger: allowedFlags]];
-		[aCoder encodeObject: [NSNumber numberWithUnsignedInteger: requiredFlags]];
+		[aCoder encodeObject: [NSNumber numberWithUnsignedInteger:allowedFlags]];
+		[aCoder encodeObject: [NSNumber numberWithUnsignedInteger:requiredFlags]];
 	}
 }
 
@@ -230,7 +204,10 @@
 	}
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+{
+	CGFloat radius = 0;
+
 	if (style == SRGradientBorderStyle) {
 		
 		NSRect whiteRect = cellFrame;
@@ -239,7 +216,8 @@
 	// Draw gradient when in recording mode
 		if (isRecording)
 		{
-			roundedRect = [NSBezierPath bezierPathWithSRCRoundRectInRect:cellFrame radius:NSHeight(cellFrame)/2.0f];
+			radius = NSHeight(cellFrame) / 2.0f;
+			roundedRect = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:radius yRadius:radius];
 			
 		// Fill background with gradient
 			[[NSGraphicsContext currentContext] saveGraphicsState];
@@ -264,7 +242,8 @@
 		}
 		
 	// Draw white rounded box
-		roundedRect = [NSBezierPath bezierPathWithSRCRoundRectInRect:whiteRect radius:NSHeight(whiteRect)/2.0f];
+		radius = NSHeight(whiteRect) / 2.0f;
+		roundedRect = [NSBezierPath bezierPathWithRoundedRect:whiteRect xRadius:radius yRadius:radius];
 		[[NSGraphicsContext currentContext] saveGraphicsState];
 		[roundedRect addClip];
 		[[NSColor whiteColor] set];
@@ -358,8 +337,8 @@
 		{
 			[NSGraphicsContext saveGraphicsState];
 			NSSetFocusRingStyle(NSFocusRingOnly);
-			[[NSBezierPath bezierPathWithSRCRoundRectInRect:cellFrame //NSInsetRect(cellFrame,2,2)
-													 radius:NSHeight(cellFrame)/2.0f] fill];
+			radius = NSHeight(cellFrame) / 2.0f;
+			[[NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:radius yRadius:radius] fill];
 			[NSGraphicsContext restoreGraphicsState];
 		}
 		
@@ -416,7 +395,8 @@
 		
 		
 	// Draw white rounded box
-		roundedRect = [NSBezierPath bezierPathWithSRCRoundRectInRect:whiteRect radius:NSHeight(whiteRect)/2.0f];
+		radius = NSHeight(whiteRect) / 2.0f;
+		roundedRect = [NSBezierPath bezierPathWithRoundedRect:whiteRect xRadius:radius yRadius:radius];
 		[[NSColor whiteColor] set];
 		[[NSGraphicsContext currentContext] saveGraphicsState];
 		[roundedRect fill];
@@ -445,7 +425,19 @@
 			[[[[NSColor windowFrameColor] shadowWithLevel:0.2f] colorWithAlphaComponent:alphaRecording] set];
 			[snapBackButton stroke];
 //		NSLog(@"stroked along path of %@", NSStringFromRect(correctedSnapBackRect));
-			[((mouseDown && mouseInsideTrackingArea) ? ([NSGradient unifiedPressedGradientWithAlpha:alphaRecording]) : ([NSGradient unifiedNormalGradientWithAlpha:alphaRecording])) drawInRect:NSInsetRect(correctedSnapBackRect,-([snapBackButton lineWidth]/2.0f),-([snapBackButton lineWidth]/2.0f)) angle:90];
+
+			NSGradient *gradient = nil;
+			if (mouseDown && mouseInsideTrackingArea) {
+				gradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.60f alpha:alphaRecording]
+														 endingColor:[NSColor colorWithCalibratedWhite:0.75f alpha:alphaRecording]];
+			}
+			else {
+				gradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.75f alpha:alphaRecording]
+														 endingColor:[NSColor colorWithCalibratedWhite:0.90f alpha:alphaRecording]];
+			}
+			CGFloat insetAmount = -([snapBackButton lineWidth]/2.0f);
+			[gradient drawInRect:NSInsetRect(correctedSnapBackRect, insetAmount, insetAmount) angle:90.0f];
+
 			/*
 		// Highlight if inside or down
 			 if (mouseInsideTrackingArea)
@@ -580,8 +572,8 @@
 		{
 			[NSGraphicsContext saveGraphicsState];
 			NSSetFocusRingStyle(NSFocusRingOnly);
-			[[NSBezierPath bezierPathWithSRCRoundRectInRect:cellFrame //NSInsetRect(cellFrame,2,2)
-													 radius:NSHeight(cellFrame)/2.0f] fill];
+			radius = NSHeight(cellFrame) / 2.0f;
+			[[NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:radius yRadius:radius] fill];
 			[NSGraphicsContext restoreGraphicsState];
 		}
 		
@@ -776,7 +768,7 @@
 	NSUInteger flags = [self _filteredCocoaFlags: [theEvent modifierFlags]];
 	NSNumber *keyCodeNumber = [NSNumber numberWithUnsignedShort: [theEvent keyCode]];
 	BOOL snapback = [cancelCharacterSet containsObject: keyCodeNumber];
-	BOOL validModifiers = [self _validModifierFlags: (snapback) ? (unsigned int)[theEvent modifierFlags] : flags]; // Snapback key shouldn't interfer with required flags!
+	BOOL validModifiers = [self _validModifierFlags: (snapback) ? [theEvent modifierFlags] : flags]; // Snapback key shouldn't interfer with required flags!
     
     // Special case for the space key when we aren't recording...
     if (!isRecording && [[theEvent characters] isEqualToString:@" "]) {
@@ -897,7 +889,7 @@
 	// filter new flags and change keycombo if not recording
 	if (isRecording)
 	{
-		recordingFlags = [self _filteredCocoaFlags: [[NSApp currentEvent] modifierFlags]];
+		recordingFlags = [self _filteredCocoaFlags: [[NSApp currentEvent] modifierFlags]];;
 	}
 	else
 	{
@@ -1032,6 +1024,12 @@
 	return keyCharsIgnoringModifiers;
 }
 
+@end
+
+#pragma mark -
+
+@implementation SRRecorderCell (Private)
+
 - (void)_privateInit
 {
     // init the validator object...
@@ -1051,12 +1049,11 @@
 	hasKeyChars = NO;
 	
 	// These keys will cancel the recoding mode if not pressed with any modifier
-	cancelCharacterSet = [[NSSet alloc] initWithObjects: [NSNumber numberWithInt:ShortcutRecorderEscapeKey], 
-		[NSNumber numberWithInt:ShortcutRecorderBackspaceKey], [NSNumber numberWithInt:ShortcutRecorderDeleteKey], nil];
+	cancelCharacterSet = [[NSSet alloc] initWithObjects: [NSNumber numberWithInteger:ShortcutRecorderEscapeKey], 
+		[NSNumber numberWithInteger:ShortcutRecorderBackspaceKey], [NSNumber numberWithInteger:ShortcutRecorderDeleteKey], nil];
 		
 	NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 	[notificationCenter addObserver:self selector:@selector(_createGradient) name:NSSystemColorsDidChangeNotification object:nil]; // recreate gradient if needed
-	[self setAutosaveName:@"RecorderCell"];
 	[self _createGradient];
 
 	[self _loadKeyCombo];
@@ -1068,8 +1065,6 @@
 	NSColor *gradientEndColor = [[[NSColor alternateSelectedControlColor] highlightWithLevel: 0.2f] colorWithAlphaComponent: 0.9f];
 	
 	recordingGradient = [[NSGradient alloc] initWithStartingColor:gradientStartColor endingColor:gradientEndColor];
-	
-	[[self controlView] display];
 }
 
 - (void)_setJustChanged {
@@ -1183,7 +1178,7 @@
 		NSDictionary *defaultsValue = [NSDictionary dictionaryWithObjectsAndKeys:
 			[NSNumber numberWithShort: keyCombo.code], @"keyCode",
 			[NSNumber numberWithUnsignedInteger: keyCombo.flags], @"modifierFlags", // cocoa
-			[NSNumber numberWithUnsignedInteger: SRCocoaToCarbonFlags(keyCombo.flags)], @"modifiers", // carbon, for compatibility with SGKeyCombo
+			[NSNumber numberWithUnsignedInteger:SRCocoaToCarbonFlags(keyCombo.flags)], @"modifiers", // carbon, for compatibility with PTKeyCombo
 			nil];
 		
 		if (hasKeyChars) {
@@ -1208,12 +1203,12 @@
 		id values = [[NSUserDefaultsController sharedUserDefaultsController] values];
 		NSDictionary *savedCombo = [values valueForKey: [self _defaultsKeyForAutosaveName: defaultsKey]];
 		
-		signed short keyCode = [[savedCombo valueForKey: @"keyCode"] shortValue];
+		NSInteger keyCode = [[savedCombo valueForKey: @"keyCode"] shortValue];
 		NSUInteger flags;
-		if ((nil == [savedCombo valueForKey:@"modifierFlags"]) && (nil != [savedCombo valueForKey:@"modifiers"])) { // carbon, for compatibility with SGKeyCombo
+		if ((nil == [savedCombo valueForKey:@"modifierFlags"]) && (nil != [savedCombo valueForKey:@"modifiers"])) { // carbon, for compatibility with PTKeyCombo
 			flags = SRCarbonToCocoaFlags([[savedCombo valueForKey: @"modifiers"] unsignedIntegerValue]);
 		} else { // cocoa
-			flags = [[savedCombo valueForKey: @"modifierFlags"] unsignedIntValue];
+			flags = [[savedCombo valueForKey: @"modifierFlags"] unsignedIntegerValue];
 		}
 		
 		keyCombo.flags = [self _filteredCocoaFlags: flags];
@@ -1320,7 +1315,7 @@
 
 #pragma mark *** Delegate pass-through ***
 
-- (BOOL) shortcutValidator:(SRValidator *)validator isKeyCode:(signed short)keyCode andFlagsTaken:(NSUInteger)flags reason:(NSString **)aReason;
+- (BOOL) shortcutValidator:(SRValidator *)validator isKeyCode:(NSInteger)keyCode andFlagsTaken:(NSUInteger)flags reason:(NSString **)aReason;
 {
     SEL selector = @selector( shortcutRecorderCell:isKeyCode:andFlagsTaken:reason: );
     if ( ( delegate ) && ( [delegate respondsToSelector:selector] ) )

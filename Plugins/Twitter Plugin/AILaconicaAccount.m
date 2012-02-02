@@ -154,8 +154,8 @@
                                    stringByAppendingPathComponent:@"statusnet/config.xml"];
     
 	NSURL           *url = [[NSURL alloc] initWithScheme:(self.useSSL ? @"https" : @"http")
-                                                    host:self.host
-                                                    path:path];
+													 host:self.host
+													 path:path];
     
     NSURLRequest    *configRequest = [NSURLRequest requestWithURL:url];
     

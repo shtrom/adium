@@ -518,16 +518,15 @@ static RAFBlockEditorWindowController *sharedInstance = nil;
 
 - (void)selectPrivacyOption:(AIPrivacyOption)privacyOption
 {
-	BOOL success = [stateChooser selectItemWithTag:privacyOption];
 	if (privacyOption == AIPrivacyOptionCustom) {
-		if (!success) {
+		if (![stateChooser selectItemWithTag:privacyOption]) {
 			NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:AILocalizedString(@"(Multiple privacy levels are active)", nil) 
 															  action:NULL
 													   keyEquivalent:@""];
 			[menuItem setTag:AIPrivacyOptionCustom];
 			[[stateChooser menu] addItem:menuItem];
 			
-			success = [stateChooser selectItemWithTag:privacyOption];
+			[stateChooser selectItemWithTag:privacyOption];
 		}
 
 	} else {
@@ -867,9 +866,7 @@ static RAFBlockEditorWindowController *sharedInstance = nil;
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)op
 {
 	BOOL accept = NO;
-    if (row < 0)
-		row = 0;
-	
+
 	if ([info.draggingPasteboard.types containsObject:@"AIListObjectUniqueIDs"]) {
 		for (NSString *uniqueUID in [info.draggingPasteboard propertyListForType:@"AIListObjectUniqueIDs"])
 			[self addListObjectToList:[adium.contactController existingListObjectWithUniqueID:uniqueUID]];

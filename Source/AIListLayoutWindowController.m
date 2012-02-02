@@ -28,7 +28,6 @@
 
 @interface AIListLayoutWindowController ()
 
-- (id)initWithWindowNibName:(NSString *)windowNibName name:(NSString *)inName notifyingTarget:(id)inTarget;
 - (void)configureControls;
 - (void)configureControlDimming;
 - (void)updateSliderValues;
@@ -45,28 +44,22 @@
 
 @implementation AIListLayoutWindowController
 
-+ (id)editListLayoutWithName:(NSString *)inName onWindow:(NSWindow *)parentWindow notifyingTarget:(id)inTarget
+- (void)showOnWindow:(NSWindow *)parentWindow
 {
-	AIListLayoutWindowController	*listLayoutWindow = [[self alloc] initWithWindowNibName:@"ListLayoutSheet"
-																					   name:inName
-																			notifyingTarget:inTarget];
-	
 	if (parentWindow) {
-		[NSApp beginSheet:[listLayoutWindow window]
+		[NSApp beginSheet:self.window
 		   modalForWindow:parentWindow
-			modalDelegate:listLayoutWindow
+			modalDelegate:self
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			  contextInfo:nil];
 	} else {
-		[listLayoutWindow showWindow:nil];
+		[self showWindow:nil];
 	}
-	
-	return listLayoutWindow;
 }
 
-- (id)initWithWindowNibName:(NSString *)windowNibName name:(NSString *)inName notifyingTarget:(id)inTarget
+- (id)initWithName:(NSString *)inName notifyingTarget:(id)inTarget
 {
-    if ((self = [super initWithWindowNibName:windowNibName])) {
+    if ((self = [super initWithWindowNibName:@"ListLayoutSheet"])) {
 		NSParameterAssert(inTarget && [inTarget respondsToSelector:@selector(listLayoutEditorWillCloseWithChanges:forLayoutNamed:)]);
 	
 		target = inTarget;
@@ -103,6 +96,11 @@
 	
 	// No longer allow alpha in our color pickers
 	[[NSColorPanel sharedColorPanel] setShowsAlpha:NO];
+}
+
+- (void)windowWillClose:(id)sender
+{
+	[super windowWillClose:sender];
 }
 
 // Cancel

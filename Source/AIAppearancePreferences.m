@@ -394,7 +394,8 @@ typedef enum {
  */
 - (IBAction)customizeEmoticons:(id)sender
 {
-	[AIEmoticonPreferences showEmoticionCustomizationOnWindow:[[self view] window]];
+	AIEmoticonPreferences *emoticonPreferences = [[AIEmoticonPreferences alloc] init];
+	[emoticonPreferences openOnWindow:[[self view] window]];
 }
 
 /*!
@@ -491,13 +492,14 @@ typedef enum {
  */
 - (IBAction)createListTheme:(id)sender
 {
-	NSString *theme = [adium.preferenceController preferenceForKey:KEY_LIST_THEME_NAME group:PREF_GROUP_APPEARANCE];	
+	NSString *theme = [adium.preferenceController preferenceForKey:KEY_LIST_THEME_NAME group:PREF_GROUP_APPEARANCE];
 	
-	[ESPresetNameSheetController showPresetNameSheetWithDefaultName:[[theme stringByAppendingString:@" "] stringByAppendingString:AILocalizedString(@"(Copy)", nil)]
-													explanatoryText:AILocalizedString(@"Enter a unique name for this new theme.",nil)
-														   onWindow:[[self view] window]
-													notifyingTarget:self
-														   userInfo:@"theme"];
+	ESPresetNameSheetController *presetNameSheetController = [[ESPresetNameSheetController alloc] initWithDefaultName:[[theme stringByAppendingString:@" "] stringByAppendingString:AILocalizedString(@"(Copy)", nil)]
+																									  explanatoryText:AILocalizedString(@"Enter a unique name for this new theme.",nil)
+																									  notifyingTarget:self
+																											 userInfo:@"theme"];
+	
+	[presetNameSheetController showOnWindow:[[self view] window]];
 }
 
 /*!
@@ -507,9 +509,9 @@ typedef enum {
 {
 	NSString *theme = [adium.preferenceController preferenceForKey:KEY_LIST_THEME_NAME group:PREF_GROUP_APPEARANCE];	
 	
-	[AIListThemeWindowController editListThemeWithName:theme
-											  onWindow:[[self view] window]
-									   notifyingTarget:self];
+	AIListThemeWindowController *listThemeWindowController = [[AIListThemeWindowController alloc] initWithName:theme
+																							   notifyingTarget:self];
+	[listThemeWindowController showOnWindow:[[self view] window]];
 }
 
 /*!
@@ -550,10 +552,10 @@ typedef enum {
 - (void)manageListThemes:(id)sender
 {
 	_listThemes = [plugin availableThemeSets];
-	[ESPresetManagementController managePresets:_listThemes
-									 namedByKey:@"name"
-									   onWindow:[[self view] window]
-								   withDelegate:self];
+	ESPresetManagementController *presetManagementController = [[ESPresetManagementController alloc] initWithPresets:_listThemes
+																										  namedByKey:@"name"
+																										withDelegate:self];
+	[presetManagementController showOnWindow:[[self view] window]];
 	
 	[popUp_colorTheme selectItemWithRepresentedObject:[adium.preferenceController preferenceForKey:KEY_LIST_THEME_NAME
 																							   group:PREF_GROUP_APPEARANCE]];		
@@ -566,11 +568,12 @@ typedef enum {
 {
 	NSString *layout = [adium.preferenceController preferenceForKey:KEY_LIST_LAYOUT_NAME group:PREF_GROUP_APPEARANCE];
 	
-	[ESPresetNameSheetController showPresetNameSheetWithDefaultName:[[layout stringByAppendingString:@" "] stringByAppendingString:AILocalizedString(@"(Copy)",nil)]
-													explanatoryText:AILocalizedString(@"Enter a unique name for this new layout.",nil)
-														   onWindow:[[self view] window]
-													notifyingTarget:self
-														   userInfo:@"layout"];
+	ESPresetNameSheetController *presetNameSheetController = [[ESPresetNameSheetController alloc] initWithDefaultName:[[layout stringByAppendingString:@" "] stringByAppendingString:AILocalizedString(@"(Copy)",nil)]
+																									  explanatoryText:AILocalizedString(@"Enter a unique name for this new layout.",nil)
+																									  notifyingTarget:self
+																											 userInfo:@"layout"];
+	
+	[presetNameSheetController showOnWindow:[[self view] window]];
 }
 
 /*!
@@ -580,9 +583,9 @@ typedef enum {
 {
 	NSString *theme = [adium.preferenceController preferenceForKey:KEY_LIST_LAYOUT_NAME group:PREF_GROUP_APPEARANCE];	
 	
-	[AIListLayoutWindowController editListLayoutWithName:theme
-											  onWindow:[[self view] window]
-									   notifyingTarget:self];
+	AIListLayoutWindowController *listLayoutWindowController = [[AIListLayoutWindowController alloc] initWithName:theme
+																								  notifyingTarget:self];
+	[listLayoutWindowController showOnWindow:[[self view] window]];
 }
 
 /*!
@@ -623,10 +626,10 @@ typedef enum {
 - (void)manageListLayouts:(id)sender
 {
 	_listLayouts = [plugin availableLayoutSets];
-	[ESPresetManagementController managePresets:_listLayouts
-									 namedByKey:@"name"
-									   onWindow:[[self view] window]
-								   withDelegate:self];
+	ESPresetManagementController *presetManagementController = [[ESPresetManagementController alloc] initWithPresets:_listLayouts
+																										  namedByKey:@"name"
+																										withDelegate:self];
+	[presetManagementController showOnWindow:[[self view] window]];
 
 	[popUp_listLayout selectItemWithRepresentedObject:[adium.preferenceController preferenceForKey:KEY_LIST_LAYOUT_NAME
 																							   group:PREF_GROUP_APPEARANCE]];		
@@ -685,14 +688,14 @@ typedef enum {
 	}
 }
 - (void)_editListThemeWithName:(NSString *)name{
-	[AIListThemeWindowController editListThemeWithName:name
-											  onWindow:[[self view] window]
-									   notifyingTarget:self];
+	AIListThemeWindowController *listThemeWindowController = [[AIListThemeWindowController alloc] initWithName:name
+																							   notifyingTarget:self];
+	[listThemeWindowController showOnWindow:[[self view] window]];
 }
 - (void)_editListLayoutWithName:(NSString *)name{
-	[AIListLayoutWindowController editListLayoutWithName:name
-												onWindow:[[self view] window]
-										 notifyingTarget:self];
+	AIListLayoutWindowController *listLayoutWindowController = [[AIListLayoutWindowController alloc] initWithName:name
+																								  notifyingTarget:self];
+	[listLayoutWindowController showOnWindow:[[self view] window]];
 }
 
 /*!
@@ -893,7 +896,8 @@ typedef enum {
  */
 - (IBAction)showAllDockIcons:(id)sender
 {
-	[AIDockIconSelectionSheet showDockIconSelectorOnWindow:[[self view] window]];
+	AIDockIconSelectionSheet *dockIconSelectionSheet = [[AIDockIconSelectionSheet alloc] init];
+	[dockIconSelectionSheet openOnWindow:[[self view] window]];
 }
 
 /*!

@@ -48,6 +48,11 @@
 	return self;
 }
 
+- (void)show
+{
+	[[self window] makeKeyAndOrderFront:nil];
+}
+
 - (NSString *)adiumFrameAutosaveName
 {
 	return @"TemporaryIRCAccountWindow";
@@ -154,9 +159,9 @@
 							group:GROUP_ACCOUNT_STATUS];
 	}
 	
-	[AIEditAccountWindowController editAccount:self.account
-									  onWindow:[self window]
-							   notifyingTarget:self];	
+	AIEditAccountWindowController *editAccountWindowController = [[AIEditAccountWindowController alloc] initWithAccount:self.account
+																										notifyingTarget:self];
+	[editAccountWindowController showOnWindow:[self window]];
 }
 
 - (void)editAccountSheetDidEndForAccount:(AIAccount *)inAccount withSuccess:(BOOL)inSuccess

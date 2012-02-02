@@ -29,8 +29,8 @@
 }
 
 -(IBAction)cancel:(id)sender;
--(void)installXtraAtURL:(NSURL *)url;
-+(XtrasInstaller *)installer;
+-(void)installXtraAtURL:(NSURL *)url __attribute__((ns_consumes_self));
++(XtrasInstaller *)installer __attribute__((objc_method_family(new)));
 
 @property (strong) NSURLDownload *download;
 @property (weak) NSString *dest;

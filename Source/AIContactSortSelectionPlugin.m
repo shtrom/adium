@@ -116,11 +116,6 @@
  */
 - (void)_configureSortSelectionMenuItems
 {
-    NSMenu				*sortSelectionMenu;
-	
-    //Create the menu
-    sortSelectionMenu = [[NSMenu alloc] initWithTitle:@""];
-	
 	//Add each sort controller
 	for (AISortController *controller in [AISortController availableSortControllers]) {
 		NSMenuItem			*menuItem;
