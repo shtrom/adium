@@ -148,7 +148,7 @@
 	
 	[button setCornerRadius:3.0f];
 	[button setToolbarItem:toolbarItem];
-	[button setImage:[NSImage imageNamed:@"userIconToolbar" forClass:[self class] loadLazily:YES]];
+	[button setImage:[NSImage imageNamed:@"default-icon" forClass:[self class] loadLazily:YES]];
 
 	//Register our toolbar item
 	[adium.toolbarController registerToolbarItem:toolbarItem forToolbarType:@"MessageWindow"];

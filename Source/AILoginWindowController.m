@@ -163,6 +163,8 @@
 
 	[tableView_editableUserList reloadData];
 	[tableView_userList reloadData];
+	
+	[tableView_userList scrollRowToVisible:[tableView_userList selectedRow]];
 }
 
 // Add a new user

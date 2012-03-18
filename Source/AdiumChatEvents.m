@@ -232,7 +232,7 @@
 - (NSImage *)imageForEventID:(NSString *)eventID
 {
 	static NSImage	*eventImage = nil;
-	if (!eventImage) eventImage = [NSImage imageNamed:@"message" forClass:[self class]];
+	if (!eventImage) eventImage = [NSImage imageNamed:@"events-message" forClass:[self class]];
 	return eventImage;
 }
 

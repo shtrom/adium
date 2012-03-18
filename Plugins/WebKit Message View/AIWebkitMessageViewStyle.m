@@ -322,7 +322,6 @@
 		timeStampFormatter = [[NSDateFormatter alloc] initWithDateFormat:format allowNaturalLanguage:NO];
 	} else {
 		timeStampFormatter = [[NSDateFormatter alloc] init];
-		[timeStampFormatter	setFormatterBehavior:NSDateFormatterBehavior10_4];
 		[timeStampFormatter setDateFormat:format];
 	}
 }
@@ -622,7 +621,7 @@
 - (NSString *)scriptForScrollingAfterAddingMultipleContentObjects
 {
 	if ((styleVersion >= 3) || !usingCustomTemplateHTML) {
-		return @"alignChat(nearBottom());";
+		return @"if (this.AI_viewScrolledOnLoad != undefined) {alignChat(nearBottom());} else {this.AI_viewScrolledOnLoad = true; alignChat(true);}";
 	}
 
 	return nil;
@@ -633,7 +632,7 @@
  */
 - (NSMutableString *)_escapeStringForPassingToScript:(NSMutableString *)inString
 {	
-	//We need to escape a few things to get our string to the javascript without trouble
+	// We need to escape a few things to get our string to the javascript without trouble
 	[inString replaceOccurrencesOfString:@"\\" 
 							  withString:@"\\\\" 
 								 options:NSLiteralSearch];
@@ -839,7 +838,6 @@
 							dateFormatter = [[NSDateFormatter alloc] initWithDateFormat:timeFormat allowNaturalLanguage:NO];
 						} else {
 							dateFormatter = [[NSDateFormatter alloc] init];
-							[dateFormatter	setFormatterBehavior:NSDateFormatterBehavior10_4];
 							[dateFormatter setDateFormat:timeFormat];
 						}
 						[timeFormatterCache setObject:dateFormatter forKey:timeFormat];
@@ -1258,7 +1256,6 @@
 					dateFormatter = [[NSDateFormatter alloc] initWithDateFormat:timeFormat allowNaturalLanguage:NO];
 				} else {
 					dateFormatter = [[NSDateFormatter alloc] init];
-					[dateFormatter	setFormatterBehavior:NSDateFormatterBehavior10_4];
 					[dateFormatter setDateFormat:timeFormat];
 				}
 				

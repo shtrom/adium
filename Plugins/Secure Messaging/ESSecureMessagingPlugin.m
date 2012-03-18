@@ -67,8 +67,8 @@
 	[adium.contentController setEncryptor:[[AdiumOTREncryption alloc] init]];
 
 	_secureMessagingMenu = nil;
-	lockImage_Locked = [NSImage imageNamed:@"Lock_Locked State" forClass:[self class]];
-	lockImage_Unlocked = [NSImage imageNamed:@"Lock_Unlocked State" forClass:[self class]];
+	lockImage_Locked = [NSImage imageNamed:@"lock-locked" forClass:[self class]];
+	lockImage_Unlocked = [NSImage imageNamed:@"lock-unlocked" forClass:[self class]];
 
 	[self registerToolbarItem];
 	[self configureMenuItems];

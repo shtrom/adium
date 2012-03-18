@@ -432,7 +432,7 @@
 {
 	static NSImage	*eventImage = nil;
 	//Use the message icon from the main bundle
-	if (!eventImage) eventImage = [NSImage imageNamed:@"message"];
+	if (!eventImage) eventImage = [NSImage imageNamed:@"events-message"];
 	return eventImage;
 }
 

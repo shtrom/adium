@@ -68,7 +68,7 @@
 
 - (NSImage *)imageForActionID:(NSString *)actionID
 {
-	return [NSImage imageNamed:@"message" forClass:[self class]];
+	return [NSImage imageNamed:@"events-message" forClass:[self class]];
 }
 
 - (AIActionDetailsPane *)detailsPaneForActionID:(NSString *)actionID
