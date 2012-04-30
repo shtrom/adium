@@ -259,11 +259,9 @@ typedef struct AppleSingleFinderInfo AppleSingleFinderInfo;
 		permissionsToApply = nil;
 		return YES;
 	}
-	NSEnumerator *enumerator = [permissionsToApply keyEnumerator];
-	NSString *path;
 	NSDictionary *attributes;
 	NSFileManager *defaultManager = [NSFileManager defaultManager];
-	while ((path = [enumerator nextObject])) {
+	for (NSString *path in permissionsToApply) {
 		/* code that uses the returned key */
 		attributes = [permissionsToApply valueForKey:path];		
 		if (![defaultManager setAttributes:attributes ofItemAtPath:path error:NULL]) {

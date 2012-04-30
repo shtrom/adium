@@ -39,6 +39,8 @@
 	NSMutableDictionary *panes;
 	AIHighlightingTextField *_selectedView;
 	
+	NSMenu *paneMenu;
+	
 	NSMutableArray *AI_topLevelObjects;
 }
 
@@ -65,7 +67,7 @@
 @property (weak) IBOutlet NSTextField *label_advanced;
 @property (weak) IBOutlet NSTextField *label_events;
 @property (weak) IBOutlet NSTextField *label_appearance;
-@property (weak) IBOutlet NSButton *button_showAll;
+@property (weak) IBOutlet NSSegmentedControl *button_showAll;
 
 
 + (void)openPreferenceWindow;

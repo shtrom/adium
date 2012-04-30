@@ -151,9 +151,7 @@
  */
 - (void)rebuildMenu
 {
-	NSEnumerator			*enumerator;
 	NSMenuItem				*menuItem;
-	AIStatus				*statusState;
 	AIStatusType			currentStatusType = AIAvailableStatusType;
 	AIStatusMutabilityType	currentStatusMutabilityType = AILockedStatusState;
 
@@ -169,8 +167,7 @@
 	/* Create a menu item for each state.  States must first be sorted such that states of the same AIStatusType
 		* are grouped together.
 		*/
-	enumerator = [[adium.statusController sortedFullStateArray] objectEnumerator];
-	while ((statusState = [enumerator nextObject])) {
+	for (AIStatus *statusState in [adium.statusController sortedFullStateArray]) {
 		@autoreleasepool {
 		AIStatusType thisStatusType = statusState.statusType;
 		AIStatusMutabilityType thisStatusMutabilityType = [statusState mutabilityType];
@@ -444,8 +441,6 @@
 + (NSMenu *)staticStatusStatesMenuNotifyingTarget:(id)target selector:(SEL)selector
 {
 	NSMenu			*statusStatesMenu = [[NSMenu alloc] init];
-	NSEnumerator	*enumerator;
-	AIStatus		*statusState;
 	AIStatusType	currentStatusType = AIAvailableStatusType;
 	NSMenuItem		*menuItem;
 	
@@ -461,8 +456,7 @@
 	/* Create a menu item for each state.  States must first be sorted such that states of the same AIStatusType
 		* are grouped together.
 		*/
-	enumerator = [[adium.statusController sortedFullStateArray] objectEnumerator];
-	while ((statusState = [enumerator nextObject])) {
+	for (AIStatus *statusState in [adium.statusController sortedFullStateArray]) {
 		AIStatusType thisStatusType = statusState.statusType;
 
 		//We treat Invisible statuses as being the same as Away for purposes of the menu

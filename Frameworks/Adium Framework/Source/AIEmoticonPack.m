@@ -137,17 +137,8 @@
  */
 - (NSArray *)enabledEmoticons
 {
-	NSEnumerator	*enumerator;
-	AIEmoticon		*emo;
-	
-	if (!enabledEmoticonArray) {
-		enabledEmoticonArray = [[NSMutableArray alloc] init];
-		enumerator = [[self emoticons] objectEnumerator];
-		while ((emo = [enumerator nextObject])) {
-			if ([emo isEnabled])
-				[enabledEmoticonArray addObject:emo];
-		}
-	}
+	if (!enabledEmoticonArray)
+		enabledEmoticonArray = [self.emoticons filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isEnabled == TRUE"]];
 	
 	return enabledEmoticonArray;
 }
@@ -183,12 +174,8 @@
  */
 - (void)setDisabledEmoticons:(NSArray *)inArray
 {
-    NSEnumerator    *enumerator;
-    AIEmoticon      *emoticon;
-    
     //Flag our emoticons as enabled/disabled
-    enumerator = [[self emoticons] objectEnumerator];
-    while ((emoticon = [enumerator nextObject])) {
+    for (AIEmoticon *emoticon in self.emoticons) {
         [emoticon setEnabled:(![inArray containsObject:[emoticon name]])];
     }
 	
@@ -334,13 +321,9 @@
  */
 - (void)loadAdiumEmoticons:(NSDictionary *)emoticons localizedStrings:(NSDictionary *)localizationDict
 {
-	NSEnumerator	*enumerator = [emoticons keyEnumerator];
-	NSString		*fileName;
-	NSBundle		*myBundle = nil;
+	__block NSBundle	*myBundle = nil;
 
-	while ((fileName = [enumerator nextObject])) {
-		id	dict = [emoticons objectForKey:fileName];
-
+	[emoticons enumerateKeysAndObjectsUsingBlock:^(id fileName, id dict, BOOL *stop) {
 		if ([dict isKindOfClass:[NSDictionary class]]) {
 			NSString *emoticonName = [(NSDictionary *)dict objectForKey:EMOTICON_NAME];
 			NSString *localizedEmoticonName = nil;
@@ -369,7 +352,7 @@
 																 name:emoticonName
 																 pack:self]];
 		}
-	}
+	}];
 }
 
 /*!
@@ -377,17 +360,12 @@
  */
 - (void)loadProteusEmoticons:(NSDictionary *)emoticons
 {
-	NSEnumerator	*enumerator = [emoticons keyEnumerator];
-	NSString		*fileName;
-	
-	while ((fileName = [enumerator nextObject])) {
-		NSDictionary	*dict = [emoticons objectForKey:fileName];
-		
+	[emoticons enumerateKeysAndObjectsUsingBlock:^(id fileName, id dict, BOOL *stop) {
 		[emoticonArray addObject:[AIEmoticon emoticonWithIconPath:[bundle pathForImageResource:fileName]
 													  equivalents:[dict objectForKey:@"String Representations"]
 															 name:[dict objectForKey:@"Meaning"]
 															 pack:self]];
-	}
+	}];
 }
 
 /*!
@@ -395,12 +373,8 @@
  */
 - (void)flushEmoticonImageCache
 {
-    NSEnumerator    *enumerator;
-    AIEmoticon      *emoticon;
-    
     //Flag our emoticons as enabled/disabled
-    enumerator = [[self emoticons] objectEnumerator];
-    while ((emoticon = [enumerator nextObject])) {
+    for (AIEmoticon *emoticon in self.emoticons) {
         [emoticon flushEmoticonImageCache];
     }
 }

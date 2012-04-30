@@ -315,10 +315,10 @@
  *
  * Only allow the drag to start if the delegate responds to @selector(movePreset:toIndex:inPresets:)
  */
-- (BOOL)tableView:(NSTableView *)tv writeRows:(NSArray*)rows toPasteboard:(NSPasteboard*)pboard
+- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
 {
 	if ([delegate respondsToSelector:@selector(movePreset:toIndex:inPresets:presetAfterMove:)]) {
-		tempDragPreset = [presets objectAtIndex:[[rows objectAtIndex:0] integerValue]];
+		tempDragPreset = [presets objectAtIndex:[rowIndexes firstIndex]];
 		
 		[pboard declareTypes:[NSArray arrayWithObject:PRESET_DRAG_TYPE] owner:self];
 		[pboard setString:@"Preset" forType:PRESET_DRAG_TYPE]; //Arbitrary state

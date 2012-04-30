@@ -184,8 +184,7 @@
 			return;
 		}
 		
-		__block NSMutableSet *skipSet =
-		[[NSMutableSet alloc] init];
+		__block NSMutableSet *skipSet = [[NSMutableSet alloc] init];
 		
 		if (termsURL) {
 			NSDictionary *terms = [NSDictionary dictionaryWithContentsOfURL:termsURL];
@@ -247,12 +246,26 @@
 	}
 	
 	_trackingAreas = [[NSMutableArray alloc] init];
+	paneMenu = [[NSMenu alloc] init];
 	
-	//Map each pane to its name and identifier
 	panes = [[NSMutableDictionary alloc] init];
-	for (AIPreferencePane *pane in [adium.preferenceController paneArray]) {
+	//Sort alphabetically by pane name
+	NSArray *paneArray = [[adium.preferenceController paneArray] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+		return [[obj1 paneName] compare:[obj2 paneName]];
+	}];
+	for (AIPreferencePane *pane in paneArray) {
+		//Map each pane to its name and identifier
 		[panes setObject:pane forKey:[pane paneIdentifier]];
 		[panes setObject:pane forKey:[pane paneName]];
+		
+		//Setup a menu item for each pane to attach to 'Show All'
+		NSMenuItem *paneItem = [[NSMenuItem alloc] initWithTitle:[pane paneName]
+														  action:@selector(displayPaneFromMenu:)
+												   keyEquivalent:@""];
+		NSImage *paneImage = [[pane paneIcon] copy];
+		[paneImage setSize:NSMakeSize(16, 16)];
+		[paneItem setImage:paneImage];
+		[paneMenu addItem:paneItem];
 	}
 	
 	//Sort and separate preference panes into their categories
@@ -292,6 +305,8 @@
 		[self.window setFrame:newWindowHeight display:YES];
 	}
 	
+	[button_showAll setMenu:paneMenu forSegment:0];
+	
 	//Load the last viewed pane
 	[self displayPaneWithIdentifier:[adium.preferenceController preferenceForKey:PREFERENCES_LAST_PANE_KEY group:PREF_GROUP_GENERAL]];
 	
@@ -308,6 +323,11 @@
 {
 	AIPreferencePane *pane = [panes objectForKey:identifier];
 	[self displayPane:pane];
+}
+
+- (void)displayPaneFromMenu:(id)sender
+{
+	[self displayPaneWithIdentifier:[sender title]];
 }
 
 - (void)displayPane:(AIPreferencePane *)pane
