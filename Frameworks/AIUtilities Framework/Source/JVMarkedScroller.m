@@ -51,6 +51,7 @@ __unsafe_unretained	NSColor *color;
 	[super drawRect:rect];
 	
 	NSAffineTransform *transform = [NSAffineTransform transform];
+	//Use -scrollerWidthForControlSize:scrollerStyle: on 10.7+
 	CGFloat width = [[self class] scrollerWidthForControlSize:[self controlSize]];
 	
 	CGFloat scale = [self scaleToContentView];
@@ -135,6 +136,7 @@ __unsafe_unretained	NSColor *color;
 				
 				point = NSMakePoint( ( sFlags.isHoriz ? 0.f : width ), ( sFlags.isHoriz ? width : 0.f ) );
 				[line relativeLineToPoint:point];
+				[line setLineWidth:2];
 				[lineArray addObject:mark.color];
 				[lineArray addObject:line];
 			} else {
