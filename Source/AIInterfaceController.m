@@ -43,7 +43,6 @@
 #import <Adium/AISortController.h>
 #import "AIMessageWindowController.h"
 #import "AIMessageTabViewItem.h"
-#import "KNShelfSplitview.h"
 #import <Adium/AIContactList.h>
 #import "AIListOutlineView.h"
 
@@ -217,7 +216,14 @@
 																				action:@selector(toggleContactList:)
 																		 keyEquivalent:@"/"];
 	[adium.menuController addMenuItem:menuItem toLocation:LOC_Window_Fixed];
-	[adium.menuController addMenuItem:[[menuItem copy] autorelease] toLocation:LOC_Dock_Status];
+	[menuItem release];
+	
+	//Contact list menu item for the dock menu
+	menuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:AILocalizedString(@"Contact List","Name of the window which lists contacts")
+																	target:self
+																	action:@selector(showContactListAndBringToFront:)
+															 keyEquivalent:@""];
+	[adium.menuController addMenuItem:menuItem toLocation:LOC_Dock_Status];
 	[menuItem release];
 	
 	menuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:AILocalizedString(@"Close Chat","Title for the close chat menu item")
