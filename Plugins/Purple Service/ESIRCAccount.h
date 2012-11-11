@@ -40,6 +40,6 @@ typedef enum {
 @property (weak, readonly, nonatomic) NSString *defaultRealname;
 
 - (void)identifyForName:(NSString *)name password:(NSString *)inPassword;
-- (AIGroupChatFlags)flagsInChat:(AIChat *)chat;
+- (AIGroupChatFlags)flagsInChat:(AIGroupChat *)chat;
 
 @end
