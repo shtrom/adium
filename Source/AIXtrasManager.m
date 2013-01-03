@@ -223,12 +223,6 @@ NSInteger categorySort(id categoryA, id categoryB, void * context)
 	if ([xtraList numberOfRows]) {
 		[xtraList selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 	}
-
-	//Show/Hide the plugin enabler for the plugin category
-	if ([[[categories objectAtIndex:[tableView_categories selectedRow]] objectForKey:@"Directory"] integerValue] == AIPluginsDirectory)
-		[togglePluginEnabled setHidden:NO];
-	else
-		[togglePluginEnabled setHidden:YES];
 	
 	[self updatePreview];
 }
@@ -295,13 +289,12 @@ NSInteger categorySort(id categoryA, id categoryB, void * context)
 		NSIndexSet * indices = [xtraList selectedRowIndexes];
 		NSMutableSet * pathExtensions = [NSMutableSet set];
 		NSString * path;
-		for (NSInteger i = [indices lastIndex]; i >= 0; i--) {
-			if ([indices containsIndex:i]) {
-				path = [[selectedCategory objectAtIndex:i] path];
-				[pathExtensions addObject:[path pathExtension]];
-				[fileManager trashFileAtPath:path];
-			}
+		for (AIXtraInfo *xtra in [selectedCategory objectsAtIndexes:indices]) {
+			path = [xtra path];
+			[pathExtensions addObject:[path pathExtension]];
+			[fileManager trashFileAtPath:path];
 		}
+		
 		[xtraList selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 		[selectedCategory removeObjectsAtIndexes:indices];
 		[xtraList reloadData];
@@ -348,17 +341,14 @@ NSInteger categorySort(id categoryA, id categoryB, void * context)
 	[[xtraList selectedRowIndexes] enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
 		AIXtraInfo *xtraInfo = [selectedCategory objectAtIndex:idx];
 		
-		if (xtraInfo.enabled)
-			[AICorePluginLoader disablePlugin:xtraInfo.path];
-		else
-			[AICorePluginLoader enablePlugin:xtraInfo.path];
+		[AICorePluginLoader moveXtra:[xtraInfo path] toDisabledFolder:xtraInfo.enabled];
 	}];
 	
 	NSAlert * warning = [NSAlert alertWithMessageText:AILocalizedString(@"You will need to restart Adium", nil)
 										defaultButton:AILocalizedString(@"OK", nil)
 									  alternateButton:nil
 										  otherButton:nil
-							informativeTextWithFormat:AILocalizedString(@"Enabling or disabling plugins requires a restart of Adium.", nil)];
+							informativeTextWithFormat:AILocalizedString(@"Enabling or disabling Xtras requires a restart of Adium.", nil)];
 	[warning beginSheetModalForWindow:self.view.window
 						modalDelegate:nil
 					   didEndSelector:nil
@@ -368,7 +358,7 @@ NSInteger categorySort(id categoryA, id categoryB, void * context)
 	[self xtrasChanged:nil];
 }
 
-+ (BOOL)createXtraBundleAtPath:(NSString *)path 
++ (BOOL)createXtraBundleAtPath:(NSString *)path
 {
 	NSString *contentsPath  = [path stringByAppendingPathComponent:@"Contents"];
 	NSString *resourcesPath = [contentsPath stringByAppendingPathComponent:@"Resources"];
