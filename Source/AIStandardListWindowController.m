@@ -126,6 +126,7 @@
 - (void)windowWillClose:(NSNotification *)notification
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	statusMenu = nil;
 	
 	[super windowWillClose:notification];
 }

@@ -80,8 +80,14 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
+	[adium.menuController removeMenuItem:dockStatusMenuRoot];
+
 	accountMenu = nil;
 	statusMenu = nil;
+	dockStatusMenuRoot = nil;
+	currentMenuItemArray = nil;
+	installedMenuItems = nil;
+	socialNetworkingMenuItem = nil;
 }
 
 /*!

@@ -175,7 +175,6 @@ static NSMutableDictionary *acceptedCertificates = nil;
 	}
 
 	CFRelease(policyRef);
-	CFRelease(trustRef);
 }
 
 /*
@@ -249,6 +248,9 @@ static SecPolicyRef SSLSecPolicyCopy()
 		}
 	}
 
+	CFRelease(trustRef);
+	trustRef = NULL;
+	
 	[parentWindow performClose:nil];
 }
 
