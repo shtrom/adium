@@ -1,15 +1,15 @@
-/* 
+/*
  * Adium is the legal property of its developers, whose names are listed in the copyright file included
  * with this source distribution.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
  * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
  * Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with this program; if not,
  * write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
@@ -59,7 +59,7 @@
 							action:nil
 					 keyEquivalent:@""
 				 representedObject:[NSNumber numberWithInt:2]];
-
+	
 	[intervalMenu addItemWithTitle:AILocalizedString(@"every 5 minutes", "Update tweets: every 5 minutes")
 							target:self
 							action:nil
@@ -192,7 +192,7 @@
 					  withColor:[NSColor redColor]
 				  buttonEnabled:YES
 					 buttonText:BUTTON_TEXT_ALLOW_ACCESS];
-		
+			
 		} else if (account.UID && [[adium.accountController passwordForAccount:account] length]) {
 			[self setStatusText:AILocalizedString(@"Adium currently has access to your account.", nil)
 					  withColor:nil
@@ -220,17 +220,17 @@
 	
 	BOOL updateGlobal = [[account preferenceForKey:TWITTER_PREFERENCE_UPDATE_GLOBAL group:TWITTER_PREFERENCE_GROUP_UPDATES] boolValue];
 	[checkBox_updateGlobalStatus setState:updateGlobal];
-
+	
 	BOOL updateGlobalIncludesReplies = [[account preferenceForKey:TWITTER_PREFERENCE_UPDATE_GLOBAL_REPLIES group:TWITTER_PREFERENCE_GROUP_UPDATES] boolValue];
 	[checkBox_updateGlobalIncludeReplies setState:updateGlobalIncludesReplies];
 	
 	[checkBox_updateGlobalIncludeReplies setEnabled:[checkBox_updateGlobalStatus state]];
-
+	
 	BOOL loadContacts = [[account preferenceForKey:TWITTER_PREFERENCE_LOAD_CONTACTS group:TWITTER_PREFERENCE_GROUP_UPDATES] boolValue];
 	[checkBox_loadContacts setState:loadContacts];
 	
 	// Personal
-
+	
 	textField_name.stringValue = [account valueForProperty:@"Profile Name"] ?: @"";
 	textField_url.stringValue = [account valueForProperty:@"Profile URL"] ?: @"";
 	textField_location.stringValue = [account valueForProperty:@"Profile Location"] ?: @"";
@@ -290,7 +290,7 @@
 {
 	textField_OAuthStatus.stringValue = text ?: @"";
 	textField_OAuthStatus.textColor = color ?: [NSColor controlTextColor];
-
+	
 	[button_OAuthStart setEnabled:enabled];
 	
 	if(buttonText) {

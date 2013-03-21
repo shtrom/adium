@@ -1,15 +1,15 @@
-/* 
+/*
  * Adium is the legal property of its developers, whose names are listed in the copyright file included
  * with this source distribution.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
  * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
  * Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with this program; if not,
  * write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
@@ -80,7 +80,7 @@
 	supportsCursors = YES;
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(chatDidOpen:) 
+											 selector:@selector(chatDidOpen:)
 												 name:Chat_DidOpen
 											   object:nil];
 	
@@ -94,15 +94,15 @@
     /* twitter.com isn't a valid server, but it was stored directly in the past. Clear it. */
     if ([[self preferenceForKey:KEY_CONNECT_HOST group:GROUP_ACCOUNT_STATUS] isEqualToString:@"twitter.com"])
         [self setPreference:nil
-                     forKey:KEY_CONNECT_HOST 
+                     forKey:KEY_CONNECT_HOST
                       group:GROUP_ACCOUNT_STATUS];
-
+	
     /* Register the default server if there is one. A subclass may choose to have no default server at all. */
     if (self.defaultServer) {
         [adium.preferenceController registerDefaults:[NSDictionary dictionaryWithObject:self.defaultServer
                                                                                  forKey:KEY_CONNECT_HOST]
                                             forGroup:GROUP_ACCOUNT_STATUS
-                                              object:self];        
+                                              object:self];
     }
 	
 	[adium.preferenceController registerPreferenceObserver:self forGroup:TWITTER_PREFERENCE_GROUP_UPDATES];
@@ -158,7 +158,7 @@
 	}
 	
 	NSDictionary *oauth = [self.passwordWhileConnected parametersDictionary];
-
+	
 	NSString *oauthToken = [oauth objectForKey:@"oauth_token"];
 	NSString *oauthSecret = [oauth objectForKey:@"oauth_token_secret"];
 	
@@ -170,9 +170,9 @@
 	
 	AILogWithSignature(@"%@ connecting to %@", self, twitterEngine.userName);
 	
-	[twitterEngine verifyCredentialsWithSuccessBlock:^(id response) {
-		if ([response isKindOfClass:[NSDictionary class]])
-			[self userInfoReceived:(NSDictionary *)response forRequest:AITwitterValidateCredentials];
+	[twitterEngine getAccountVerifyCredentialsSkipStatus:YES
+											successBlock:^(NSDictionary *myInfo) {
+		[self userInfoReceived:myInfo forRequest:AITwitterValidateCredentials];
 		
 		if ([[self preferenceForKey:TWITTER_PREFERENCE_LOAD_CONTACTS group:TWITTER_PREFERENCE_GROUP_UPDATES] boolValue]) {
 			// If we load our follows as contacts, do so now.
@@ -181,17 +181,17 @@
 			[self silenceAllContactUpdatesForInterval:18.0];
 			// Grab our user list.
 			[twitterEngine getFriendsForScreenName:self.UID
-									   successBlock:^(NSArray *friends) {
-										   [self userInfoReceived:@{ @"friends" : friends } forRequest:AITwitterInitialUserInfo];
-										   
-										   if ([self boolValueForProperty:@"isConnecting"]) {
-											   // Trigger our normal update routine.
-											   [self didConnect];
-										   }
-									   } errorBlock:^(NSError *error) {
-										   [self setLastDisconnectionError:AILocalizedString(@"Unable to retrieve user list [fail]", "Message when a (vital) twitter request to retrieve the follow list fails")];
-										   [self didDisconnect];
-									   }];
+									  successBlock:^(NSArray *friends) {
+										  [self userInfoReceived:@{ @"friends" : friends } forRequest:AITwitterInitialUserInfo];
+										  
+										  if ([self boolValueForProperty:@"isConnecting"]) {
+											  // Trigger our normal update routine.
+											  [self didConnect];
+										  }
+									  } errorBlock:^(NSError *error) {
+										  [self setLastDisconnectionError:AILocalizedString(@"Unable to retrieve user list [fail]", "Message when a (vital) twitter request to retrieve the follow list fails")];
+										  [self didDisconnect];
+									  }];
 		} else {
 			// If we don't load follows as contacts, we've finished connecting (fast, wasn't it?)
 			[self didConnect];
@@ -220,11 +220,11 @@
 	
 	if (timelineBookmark) {
 		[timelineBookmark restoreGrouping];
-
+		
 	} else {
 		AIChat *newTimelineChat = [adium.chatController chatWithName:self.timelineChatName
 														  identifier:nil
-														   onAccount:self 
+														   onAccount:self
 													chatCreationInfo:nil];
 		
 		[newTimelineChat setDisplayName:self.timelineChatName];
@@ -345,7 +345,7 @@
  * @brief Affirm we can open chats.
  */
 - (BOOL)openChat:(AIChat *)chat
-{	
+{
 	[chat setValue:[NSNumber numberWithBool:YES] forProperty:@"accountJoined" notify:NotifyNow];
 	
 	return YES;
@@ -355,7 +355,7 @@
  * @brief Allow all chats to close.
  */
 - (BOOL)closeChat:(AIChat *)inChat
-{	
+{
 	return YES;
 }
 
@@ -363,7 +363,7 @@
  * @brief Rejoin the requested chat.
  */
 - (BOOL)rejoinChat:(AIChat *)inChat
-{	
+{
 	[self displayYouHaveConnectedInChat:inChat];
 	
 	return YES;
@@ -404,7 +404,7 @@
 	
 	if(chat.isGroupChat && chat.account == self) {
 		[self updateTimelineChat:(AIGroupChat *)chat];
-	}	
+	}
 }
 
 /*!
@@ -716,7 +716,7 @@
  */
 - (NSString *)tokenAccessURL
 {
-	return @"https://twitter.com/oauth/access_token";	
+	return @"https://twitter.com/oauth/access_token";
 }
 
 /*!
@@ -772,7 +772,7 @@
 	[menuItem setRepresentedObject:inContact];
 	[menuItemArray addObject:menuItem];
 	
-	return menuItemArray;	
+	return menuItemArray;
 }
 
 /*!
@@ -849,7 +849,7 @@
 	[menuItem setImage:serviceIcon];
 	[menuItemArray addObject:menuItem];
 	
-	return menuItemArray;	
+	return menuItemArray;
 }
 
 /*!
@@ -883,7 +883,7 @@
 															  keyEquivalent:@""];
 	[menuItemArray addObject:menuItem];
 	
-	return menuItemArray;	
+	return menuItemArray;
 }
 
 /*!
@@ -960,7 +960,7 @@
 - (AIGroupChat *)timelineChat
 {
 	AIGroupChat *timelineChat = [adium.chatController existingChatWithName:self.timelineChatName
-															onAccount:self];
+																 onAccount:self];
 	
 	if (!timelineChat) {
 		timelineChat = [adium.chatController chatWithName:self.timelineChatName
@@ -969,20 +969,20 @@
 										 chatCreationInfo:nil];
 	}
 	
-	return timelineChat;	
+	return timelineChat;
 }
 
 /*!
  * @brief Update the timeline chat
- * 
+ *
  * Remove the userlist
  */
 - (void)updateTimelineChat:(AIGroupChat *)timelineChat
 {
 	// Disable the user list on the chat.
 	if (timelineChat.chatContainer.chatViewController.userListVisible) {
-		[timelineChat.chatContainer.chatViewController toggleUserList]; 
-	}	
+		[timelineChat.chatContainer.chatViewController toggleUserList];
+	}
 	
 	// Update the participant list.
 	[timelineChat addParticipatingListObjects:self.contacts notify:NotifyNow];
@@ -1079,10 +1079,10 @@
 	if ([group.UID isEqualToString:self.timelineGroupName]) {
 		/* Hide the group by no longer loading Twitter contacts */
 		[self setPreference:[NSNumber numberWithBool:NO]
-					 forKey:TWITTER_PREFERENCE_LOAD_CONTACTS 
+					 forKey:TWITTER_PREFERENCE_LOAD_CONTACTS
 					  group:TWITTER_PREFERENCE_GROUP_UPDATES];
 		return AIAccountGroupDeletionShouldIgnoreContacts;
-
+		
 	} else {
 		return AIAccountGroupDeletionShouldRemoveContacts;
 	}
@@ -1098,7 +1098,7 @@
 		AILogWithSignature(@"Not adding contact %@ to group %@, it's me!", contact.UID, group.UID);
 		return;
 	}
-
+	
 	AILogWithSignature(@"%@ Requesting follow for: %@", self, contact.UID);
 	[twitterEngine postFollow:contact.UID
 				 successBlock:^(NSDictionary *friend) {
@@ -1161,11 +1161,11 @@
 				[self silenceAllContactUpdatesForInterval:18.0];
 				// Grab our user list.
 				[twitterEngine getFriendsForScreenName:self.UID
-										successBlock:^(NSArray *friends) {
-											[self userInfoReceived:@{ @"friends" : friends } forRequest:AITwitterInitialUserInfo];
-										} errorBlock:^(NSError *error) {
-											[self requestFailed:AITwitterInitialUserInfo withError:error userInfo:nil];
-										}];
+										  successBlock:^(NSArray *friends) {
+											  [self userInfoReceived:@{ @"friends" : friends } forRequest:AITwitterInitialUserInfo];
+										  } errorBlock:^(NSError *error) {
+											  [self requestFailed:AITwitterInitialUserInfo withError:error userInfo:nil];
+										  }];
 			} else {
 				[[self timelineChat] removeAllParticipatingContactsSilently];
 				[self removeAllContacts];
@@ -1226,7 +1226,7 @@
 								 [self requestFailed:AITwitterUpdateFollowedTimeline withError:error userInfo:nil];
 							 }];
 	
-	// Pull the replies feed	
+	// Pull the replies feed
 	lastID = [self preferenceForKey:TWITTER_PREFERENCE_REPLIES_LAST_ID
 							  group:TWITTER_PREFERENCE_GROUP_UPDATES];
 	
@@ -1262,7 +1262,7 @@
 			break;
 			
 		case 404:
-			// Not Found: either you're requesting an invalid URI or the resource in question doesn't exist (ex: no such user). 
+			// Not Found: either you're requesting an invalid URI or the resource in question doesn't exist (ex: no such user).
 			return AILocalizedString(@"Requested resource not found.", nil);
 			break;
 			
@@ -1308,9 +1308,9 @@
 	} else if (linkType == AITwitterLinkFriends) {
 		address = [NSString stringWithFormat:@"https://twitter.com/%@/friends", userID];
 	} else if (linkType == AITwitterLinkFollowers) {
-		address = [NSString stringWithFormat:@"https://twitter.com/%@/followers", userID]; 
+		address = [NSString stringWithFormat:@"https://twitter.com/%@/followers", userID];
 	} else if (linkType == AITwitterLinkUserPage) {
-		address = [NSString stringWithFormat:@"https://twitter.com/%@", userID]; 
+		address = [NSString stringWithFormat:@"https://twitter.com/%@", userID];
 	} else if (linkType == AITwitterLinkSearchHash) {
 		address = [NSString stringWithFormat:@"http://search.twitter.com/search?q=%%23%@", context];
 	} else if (linkType == AITwitterLinkReply) {
@@ -1322,7 +1322,7 @@
 	} else if (linkType == AITwitterLinkDestroyStatus) {
 		address = [NSString stringWithFormat:@"twitterreply://%@@%@?action=destroy&status=%@&message=%@", self.internalObjectID, userID, statusID, context];
 	} else if (linkType == AITwitterLinkDestroyDM) {
-		address = [NSString stringWithFormat:@"twitterreply://%@@%@?action=destroy&dm=%@&message=%@", self.internalObjectID, userID, statusID, context];		
+		address = [NSString stringWithFormat:@"twitterreply://%@@%@?action=destroy&dm=%@&message=%@", self.internalObjectID, userID, statusID, context];
 	} else if (linkType == AITwitterLinkQuote) {
 		address = [NSString stringWithFormat:@"twitterreply://%@@%@?action=quote&message=%@", self.internalObjectID, userID, context];
 	}
@@ -1481,7 +1481,7 @@
  * @brief Parse an attributed string into a linkified version.
  */
 - (NSAttributedString *)linkifiedAttributedStringFromString:(NSAttributedString *)inString
-{	
+{
 	NSAttributedString *attributedString;
 	
 	static NSCharacterSet *usernameCharacters = nil;
@@ -1497,7 +1497,6 @@
 		[disallowedCharacters removeCharactersInString:@"_"];
 		
 		hashCharacters = [disallowedCharacters invertedSet];
-		
 	}
 	
 	attributedString = [AITwitterURLParser linkifiedStringFromAttributedString:inString
@@ -1562,7 +1561,7 @@
 																		   linkDestination:linkAddress
 																				 linkClass:AITwitterInReplyToClassName]];
 				
-				commaNeeded = YES;	
+				commaNeeded = YES;
 			}
 		}
 		
@@ -1590,7 +1589,7 @@
 																					 linkClass:AITwitterRetweetClassName]];
 					commaNeeded = YES;
 				}
-
+				
 				/* Next add the quote link */
 				if(commaNeeded) {
 					[mutableMessage appendString:@", " withAttributes:nil];
@@ -1605,14 +1604,14 @@
 				
 				[mutableMessage appendAttributedString:[self attributedStringWithLinkLabel:PILCROW_SIGN
 																		   linkDestination:linkAddress
-																				 linkClass:AITwitterQuoteClassName]];					
+																				 linkClass:AITwitterQuoteClassName]];
 				
 				commaNeeded = YES;
 				
 				/* Now add the reply link */
 				if (commaNeeded) {
 					[mutableMessage appendString:@", " withAttributes:nil];
-				}			
+				}
 				
 				linkAddress = [self addressForLinkType:AITwitterLinkReply
 												userID:userID
@@ -1727,7 +1726,7 @@ NSInteger queuedUpdatesSort(id update1, id update2, void *context)
  */
 NSInteger queuedDMSort(id dm1, id dm2, void *context)
 {
-	return [[dm1 objectForKey:TWITTER_DM_CREATED] compare:[dm2 objectForKey:TWITTER_DM_CREATED]];	
+	return [[dm1 objectForKey:TWITTER_DM_CREATED] compare:[dm2 objectForKey:TWITTER_DM_CREATED]];
 }
 
 /*!
@@ -2002,9 +2001,9 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 		case AITwitterFavoriteNo:
 		{
 			AIChat *timelineChat = self.timelineChat;
-				[adium.contentController displayEvent:[NSString stringWithFormat:AILocalizedString(@"Attempt to favorite tweet failed. %@", nil), [self errorMessageForError:error]]
-											   ofType:@"favorite"
-											   inChat:timelineChat];
+			[adium.contentController displayEvent:[NSString stringWithFormat:AILocalizedString(@"Attempt to favorite tweet failed. %@", nil), [self errorMessageForError:error]]
+										   ofType:@"favorite"
+										   inChat:timelineChat];
 			
 			break;
 		}
@@ -2124,7 +2123,7 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
  */
 - (void)directMessagesReceived:(NSArray *)messages forRequest:(AITwitterRequestType)identifier
 {
-	if (identifier == AITwitterUpdateDirectMessage) {		
+	if (identifier == AITwitterUpdateDirectMessage) {
 		NSString *lastID = [self preferenceForKey:TWITTER_PREFERENCE_DM_LAST_ID
 											group:TWITTER_PREFERENCE_GROUP_UPDATES];
 		
