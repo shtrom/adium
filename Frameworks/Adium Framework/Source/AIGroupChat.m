@@ -31,7 +31,6 @@
 @interface AIGroupChat ()
 
 - (void)contentObjectAdded:(NSNotification *)notification;
-- (AIListContact *)visibleObjectAtIndex:(NSUInteger)idx;
 
 @end
 
@@ -46,9 +45,9 @@ static int nextChatNumber = 0;
     if ((self = [super initForAccount:inAccount])) {
         showJoinLeave = YES;
 		expanded = YES;
-        participatingContacts = [[NSMutableArray alloc] init];
-		participatingContactsFlags = [[NSMutableDictionary alloc] init];
-		participatingContactsAliases = [[NSMutableDictionary alloc] init];
+        participatingNicks = [[NSMutableArray alloc] init];
+		participatingNicksFlags = [[NSMutableDictionary alloc] init];
+		participatingNicksContacts = [[NSMutableDictionary alloc] init];
 
         
 		[[NSNotificationCenter defaultCenter] addObserver:self
@@ -117,20 +116,6 @@ static int nextChatNumber = 0;
 	[super object:inObject didChangeValueForProperty:key notify:notify];
 }
 
-/*!
- * @brief The alias for a given contact
- */
-- (NSString *)aliasForContact:(AIListObject *)contact
-{
-	NSString *alias = [participatingContactsAliases objectForKey:contact.UID];
-	
-	if (!alias) {
-		alias = [self.account fallbackAliasForContact:(AIListContact *)contact inChat:self];
-	}
-	
-	return alias;
-}
-
 AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
 {
 	if ((flags & AIGroupChatFounder) == AIGroupChatFounder)
@@ -194,15 +179,18 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
 /*!
  * @brief Update the topic.
  */
-- (void)updateTopic:(NSString *)inTopic withSource:(AIListContact *)contact
+- (void)updateTopic:(NSString *)inTopic withSource:(NSString *)nick
 {
+	AIListContact *contact = [self contactForNick:nick];
+	
 	[self setValue:inTopic forProperty:KEY_TOPIC notify:NotifyNow];
 	
-	[self setValue:contact forProperty:KEY_TOPIC_SETTER notify:NotifyNow];
+	[self setValue:nick forProperty:KEY_TOPIC_SETTER notify:NotifyNow];
 	
 	// Apply the new topic to the message view
 	AIContentTopic *contentTopic = [AIContentTopic topicInChat:self
 													withSource:contact
+													sourceNick:nick
 												   destination:nil
 														  date:[NSDate date]
 													   message:[NSAttributedString stringWithString:[self valueForProperty:KEY_TOPIC] ?: @""]];
@@ -250,15 +238,15 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
  */
 - (void)resortParticipants
 {
-	[participatingContacts sortUsingComparator:^(id objectA, id objectB){
-		AIGroupChatFlags flagA = highestFlag([self flagsForContact:objectA]), flagB = highestFlag([self flagsForContact:objectB]);
+	[participatingNicks sortUsingComparator:^(id objectA, id objectB){
+		AIGroupChatFlags flagA = highestFlag([self flagsForNick:objectA]), flagB = highestFlag([self flagsForNick:objectB]);
 		
 		if(flagA > flagB) {
 			return (NSComparisonResult)NSOrderedAscending;
 		} else if (flagA < flagB) {
 			return (NSComparisonResult)NSOrderedDescending;
 		} else {
-			return [[self displayNameForContact:objectA] localizedCaseInsensitiveCompare:[self displayNameForContact:objectB]];
+			return [objectA localizedCaseInsensitiveCompare:objectB];
 		}
 	}];
 }
@@ -266,46 +254,42 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
 //Participating ListObjects --------------------------------------------------------------------------------------------
 #pragma mark Participating ListObjects
 
-/*!
- * @brief The display name for the contact in this chat.
- *
- * @param contact The AIListObject whose display name should be created
- *
- * If the user has an alias set, the alias is used, otherwise the display name.
- *
- * @returns Display name
- */
-- (NSString *)displayNameForContact:(AIListObject *)contact
+- (AIListObject *)contactForNick:(NSString *)nick
 {
-	return [self aliasForContact:contact] ?: contact.displayName;
+	return [participatingNicksContacts objectForKey:nick];
 }
 
-/*!
- * @brief The flags for a given contact.
- */
-- (AIGroupChatFlags)flagsForContact:(AIListObject *)contact
+- (AIGroupChatFlags)flagsForNick:(NSString *)nick
 {
-	return [(NSNumber *)[participatingContactsFlags objectForKey:contact.UID] intValue];
+	return [[participatingNicksFlags objectForKey:nick] intValue];
 }
 
-/*!
- * @brief Set the flags for a contact
- *
- * Note that this doesn't set the bitwise or; this directly sets the value passed.
- */
-- (void)setFlags:(AIGroupChatFlags)flags forContact:(AIListObject *)contact
+- (void)setFlags:(AIGroupChatFlags)flags forNick:(NSString *)nick
 {
-	[participatingContactsFlags setObject:[NSNumber numberWithInteger:flags]
-								   forKey:contact.UID];
+	[participatingNicksFlags setObject:@(flags)
+								forKey:nick];
 }
 
-/*!
- * @brief Set the alias for a contact.
- */
-- (void)setAlias:(NSString *)alias forContact:(AIListObject *)contact
+- (void)setContact:(AIListContact *)contact forNick:(NSString *)nick
 {
-	[participatingContactsAliases setObject:alias
-									 forKey:contact.UID];
+	NSParameterAssert(contact != nil);
+	
+	[participatingNicksContacts setObject:contact
+								   forKey:nick];
+}
+
+- (void)changeNick:(NSString *)from to:(NSString *)to
+{
+	[participatingNicks removeObject:from];
+	[participatingNicks addObject:to];
+	
+	NSNumber *flags = [participatingNicksFlags objectForKey:from];
+	[participatingNicksFlags removeObjectForKey:from];
+	if (flags) [participatingNicksFlags setObject:flags forKey:to];
+	
+	AIListObject *contact = [participatingNicksContacts objectForKey:from];
+	[participatingNicksContacts removeObjectForKey:from];
+	if (contact) [participatingNicksContacts setObject:contact forKey:to];
 }
 
 /*!
@@ -314,35 +298,41 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
  * Removes any values which are dependent upon the contact, such as
  * its flags or alias.
  */
-- (void)removeSavedValuesForContactUID:(NSString *)contactUID
+- (void)removeSavedValuesForNick:(NSString *)nick
 {
-	[participatingContactsFlags removeObjectForKey:contactUID];
-	[participatingContactsAliases removeObjectForKey:contactUID];
+	[participatingNicksFlags removeObjectForKey:nick];
+	[participatingNicksContacts removeObjectForKey:nick];
 }
 
-- (void)addParticipatingListObject:(AIListContact *)inObject notify:(BOOL)notify
+- (NSArray *)nicksForContact:(AIListObject *)contact
 {
-	[self addParticipatingListObjects:[NSArray arrayWithObject:inObject] notify:notify];
-}
-
-- (void)addParticipatingListObjects:(NSArray *)inObjects notify:(BOOL)notify
-{
-	NSMutableArray *contacts = [inObjects mutableCopy];
-    
-	for (AIListObject *obj in inObjects) {
-		if ([self containsObject:obj] || ![self canContainObject:obj])
-			[contacts removeObject:obj];
+	NSMutableArray *nicks = [NSMutableArray array];
+	
+	for (NSString *nick in participatingNicks) {
+		if ([[participatingNicksContacts objectForKey:nick] isEqual:contact]) {
+			[nicks addObject:nick];
+		}
 	}
 	
-	[participatingContacts addObjectsFromArray:contacts];
-	[adium.chatController chat:self addedListContacts:contacts notify:notify];
+	return nicks;
 }
 
-- (BOOL)addObject:(AIListObject *)inObject
+- (void)addParticipatingNick:(NSString *)inObject notify:(BOOL)notify
 {
-	NSParameterAssert([inObject isKindOfClass:[AIListContact class]]);
+	[self addParticipatingNicks:[NSArray arrayWithObject:inObject] notify:notify];
+}
+
+- (void)addParticipatingNicks:(NSArray *)inObjects notify:(BOOL)notify
+{
+	[participatingNicks addObjectsFromArray:inObjects];
+	[adium.chatController chat:self addedListContacts:inObjects notify:notify];
+}
+
+- (BOOL)addObject:(NSString *)inObject
+{
+	NSParameterAssert([inObject isKindOfClass:[NSString class]]);
     
-	[self addParticipatingListObject:(AIListContact *)inObject notify:YES];
+	[self addParticipatingNick:inObject notify:YES];
 	return YES;
 }
 
@@ -352,84 +342,97 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
 	return ([self.account inviteContact:inContact toChat:self withMessage:inviteMessage]);
 }
 
-#pragma mark AIContainingObject protocol
+- (NSArray *)containedObjects
+{
+	return [participatingNicksContacts allValues];
+}
+
 - (NSArray *)visibleContainedObjects
 {
 	return self.containedObjects;
 }
-- (NSArray *)containedObjects
-{
-	return participatingContacts;
-}
+
 - (NSUInteger)countOfContainedObjects
 {
-	return [participatingContacts count];
+	return [participatingNicks count];
 }
 
 - (BOOL)containsObject:(AIListObject *)inObject
 {
-	return [participatingContacts containsObjectIdenticalTo:inObject];
+	return [[participatingNicksContacts allValues] containsObjectIdenticalTo:inObject];
 }
 
-- (AIListContact *)visibleObjectAtIndex:(NSUInteger)idx
+- (NSString *)visibleObjectAtIndex:(NSUInteger)idx
 {
-	return [participatingContacts objectAtIndex:idx];
+	return [participatingNicks objectAtIndex:idx];
 }
 
 - (NSUInteger)visibleIndexOfObject:(AIListObject *)obj
 {
 	if(![[AIContactHidingController sharedController] visibilityOfListObject:obj inContainer:self])
 		return NSNotFound;
-	return [participatingContacts indexOfObject:obj];
+	for (NSString *nick in participatingNicks) {
+		if ([[participatingNicksContacts objectForKey:nick] isEqual:obj]) {
+			return [participatingNicks indexOfObject:nick];
+		}
+	}
+	
+	return NSNotFound;
 }
 
 - (NSArray *)uniqueContainedObjects
 {
-	return self.containedObjects;
+	NSMutableArray *contacts = [NSMutableArray array];
+	
+	for (AIListContact *contact in [participatingNicksContacts allValues]) {
+		if (![contacts containsObject:contacts]) {
+			[contacts addObject:contact];
+		}
+	}
+		
+	return contacts;
 }
 
-- (void)removeObject:(AIListObject *)inObject
+- (void)removeObject:(NSString *)inObject
 {
-	if ([self containsObject:inObject]) {
-		AIListContact *contact = (AIListContact *)inObject; //if we contain it, it has to be an AIListContact
+	AIListContact *contact = [participatingNicksContacts valueForKey:inObject];
+	
+	[participatingNicks removeObject:inObject];
+	
+	[self removeSavedValuesForNick:inObject];
+	
+	[adium.chatController chat:self removedListContact:contact];
+	
+	if (contact.isStranger &&
+		![adium.chatController allGroupChatsContainingContact:contact.parentContact].count &&
+		![adium.chatController existingChatWithContact:contact.parentContact]) {
 		
-		[participatingContacts removeObject:inObject];
-		
-		[self removeSavedValuesForContactUID:inObject.UID];
-        
-		[adium.chatController chat:self removedListContact:contact];
-        
-		if (contact.isStranger &&
-			![adium.chatController allGroupChatsContainingContact:contact.parentContact].count &&
-			![adium.chatController existingChatWithContact:contact.parentContact]) {
-			
-			[[AIContactObserverManager sharedManager] delayListObjectNotifications];
-			[adium.contactController accountDidStopTrackingContact:contact];
-			[[AIContactObserverManager sharedManager] endListObjectNotificationsDelaysImmediately];
-		}
+		[[AIContactObserverManager sharedManager] delayListObjectNotifications];
+		[adium.contactController accountDidStopTrackingContact:contact];
+		[[AIContactObserverManager sharedManager] endListObjectNotificationsDelaysImmediately];
 	}
 }
 
-- (void)removeObjectAfterAccountStopsTracking:(AIListObject *)object
+- (void)removeObjectAfterAccountStopsTracking:(NSString *)object
 {
-	[self removeObject:object]; //does nothing if we've already removed it
+	[self removeObject:object];
 }
 
 - (void)removeAllParticipatingContactsSilently
 {
 	/* Note that allGroupChatsContainingContact won't count this chat if it's already marked as not open */
-	for (AIListContact *listContact in self) {
+	for (AIListContact *listContact in [participatingNicksContacts allValues]) {
 		if (listContact.isStranger &&
 			![adium.chatController existingChatWithContact:listContact.parentContact] &&
 			([adium.chatController allGroupChatsContainingContact:listContact.parentContact].count == 0)) {
 			[adium.contactController accountDidStopTrackingContact:listContact];
 		}
 	}
-	
-	[participatingContacts removeAllObjects];
-	[participatingContactsFlags removeAllObjects];
-	[participatingContactsAliases removeAllObjects];
-	
+
+	[participatingNicks removeAllObjects];
+	[participatingNicksFlags removeAllObjects];
+	[participatingNicksContacts removeAllObjects];
+
 	[[NSNotificationCenter defaultCenter] postNotificationName:Chat_ParticipatingListObjectsChanged
 														object:self];
 }
@@ -448,7 +451,7 @@ AIGroupChatFlags highestFlag(AIGroupChatFlags flags)
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id [])stackbuf count:(NSUInteger)len
 {
-	return [participatingContacts countByEnumeratingWithState:state objects:stackbuf count:len];
+	return [participatingNicks countByEnumeratingWithState:state objects:stackbuf count:len];
 }
 
 - (BOOL) canContainObject:(id)obj

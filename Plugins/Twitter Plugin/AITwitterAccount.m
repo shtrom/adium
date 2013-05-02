@@ -978,7 +978,10 @@
 	}
 	
 	// Update the participant list.
-	[timelineChat addParticipatingListObjects:self.contacts notify:NotifyNow];
+	for (AIListContact *contact in self.contacts) {
+		[timelineChat addParticipatingNick:contact.UID notify:NotifyNow];
+		[timelineChat setContact:contact forNick:contact.UID];
+	}
 	
 	NSNumber *max = nil;
 	if (self.maxChars > 0) {
@@ -1816,7 +1819,7 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 			
 			NSDate			*date = [status objectForKey:TWITTER_STATUS_CREATED];
 			
-			id fromObject = nil;
+			AIListObject *fromObject = nil;
 			
 			if (![self.UID isCaseInsensitivelyEqualToString:contactUID]) {
 				AIListContact *listContact = [self contactWithUID:contactUID];
@@ -1827,15 +1830,17 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 				
 				[self updateUserIcon:[[status objectForKey:TWITTER_STATUS_USER] objectForKey:TWITTER_INFO_ICON] forContact:listContact];
 				
-				[timelineChat addParticipatingListObject:listContact notify:NotifyNow];
+				[timelineChat addParticipatingNick:listContact.UID notify:NotifyNow];
+				[timelineChat setContact:listContact forNick:listContact.UID];
 				
-				fromObject = (id)listContact;
+				fromObject = listContact;
 			} else {
-				fromObject = (id)self;
+				fromObject = self;
 			}
 			
 			AIContentMessage *contentMessage = [AIContentMessage messageInChat:timelineChat
 																	withSource:fromObject
+																	sourceNick:fromObject.displayName
 																   destination:self
 																		  date:date
 																	   message:message
@@ -1882,6 +1887,7 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 			if(chat && source && destination) {
 				AIContentMessage *contentMessage = [AIContentMessage messageInChat:chat
 																		withSource:source
+																		sourceNick:source.displayName
 																	   destination:destination
 																			  date:date
 																		   message:[self parseDirectMessage:message
@@ -2140,8 +2146,6 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 		NSString *lastID = [self preferenceForKey:TWITTER_PREFERENCE_DM_LAST_ID
 											group:TWITTER_PREFERENCE_GROUP_UPDATES];
 		
-		BOOL nextPageNecessary = (lastID && messages.count >= TWITTER_UPDATE_DM_COUNT);
-		
 		// Store the largest tweet ID we find; this will be our "last ID" the next time we run.
 		NSString *largestTweet = nil;
 		
@@ -2150,7 +2154,7 @@ NSInteger queuedDMSort(id dm1, id dm2, void *context)
 		
 		[queuedDM addObjectsFromArray:messages];
 		
-		AILogWithSignature(@"%@ Last ID: %@ Largest Tweet: %@ Next Page Necessary: %d", self, lastID, largestTweet, nextPageNecessary);
+		AILogWithSignature(@"%@ Last ID: %@ Largest Tweet: %@", self, lastID, largestTweet);
 		
 		--pendingUpdateCount;
 		

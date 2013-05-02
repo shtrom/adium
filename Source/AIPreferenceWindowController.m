@@ -504,6 +504,7 @@
 	//Create the entries in the suggestions window
 	CGFloat y = frame.size.height - SUGGESTION_ENTRY_HEIGHT;
 	for (NSDictionary *dict in entries) {
+		//This is not a leak, these are released at the start of this method
 		AIHighlightingTextField *item = [[AIHighlightingTextField alloc] initWithFrame:NSMakeRect(0, y, frame.size.width, SUGGESTION_ENTRY_HEIGHT)];
 		
 		[item setString:[dict objectForKey:@"title"]

@@ -785,7 +785,8 @@ static NSArray *draggedTypes = nil;
 	NSAttributedString *topic = [NSAttributedString stringWithString:([chat valueForProperty:KEY_TOPIC] ?: @"")];
 	
 	AIContentTopic *contentTopic = [AIContentTopic topicInChat:chat
-													withSource:[chat valueForProperty:KEY_TOPIC_SETTER]
+													withSource:[(AIGroupChat *)chat contactForNick:[chat valueForProperty:KEY_TOPIC_SETTER]]
+													sourceNick:[chat valueForProperty:KEY_TOPIC_SETTER]
 												   destination:nil
 														  date:[NSDate date]
 													   message:topic];
@@ -831,6 +832,20 @@ static NSArray *draggedTypes = nil;
 													error:nil];
 		}
 	}];
+}
+
+/*!
+ * @brief Search the selected text with DDG, similar to the Search with Google option that's included by default.
+ */
+- (void)searchDDG
+{
+	DOMRange *range = [webView selectedDOMRange];
+	NSString *query = [[range toString] stringByAddingPercentEscapesForAllCharacters];
+	
+	if (query && query.length > 0) {
+		NSURL *ddgURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://duckduckgo.com/?q=%@&t=adium", query]];
+		[[NSWorkspace sharedWorkspace] openURL:ddgURL];
+	}
 }
 
 /*!
@@ -952,6 +967,16 @@ static NSArray *draggedTypes = nil;
 										  action:@selector(clearView)
 								   keyEquivalent:@""];
 	[webViewMenuItems addObject:menuItem];
+	
+	for (NSMenuItem *searchItem in defaultMenuItems) {
+		if ([searchItem tag] == WebMenuItemTagSearchWeb) {
+			menuItem = [[NSMenuItem alloc] initWithTitle:AILocalizedString(@"Search with DuckDuckGo", nil)
+												  target:self
+												  action:@selector(searchDDG)
+										   keyEquivalent:@""];
+			[webViewMenuItems insertObject:menuItem atIndex:[webViewMenuItems indexOfObject:searchItem] + 1];
+		}
+	}
 	
 	return webViewMenuItems;
 }

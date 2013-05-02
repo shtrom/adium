@@ -906,8 +906,8 @@
 
 		//Use [content source] directly rather than the potentially-metaContact theSource
 		NSString *formattedUID = nil;
-        if (content.chat.isGroupChat && [(AIGroupChat *)content.chat aliasForContact:contentSource]) {
-			formattedUID = [(AIGroupChat *)content.chat aliasForContact:contentSource];
+        if (content.chat.isGroupChat && content.sourceNick) {
+			formattedUID = content.sourceNick;
 		} else {
 			formattedUID = contentSource.formattedUID;
 		}
@@ -915,7 +915,7 @@
 		NSString *displayName;
 
         if (content.chat.isGroupChat)
-            displayName = [(AIGroupChat *)content.chat displayNameForContact:contentSource];
+            displayName = content.sourceNick;
         else
             displayName = content.source.displayName;
 

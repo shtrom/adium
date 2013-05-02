@@ -21,7 +21,7 @@
 @interface AIPurpleCertificateViewer (privateMethods)
 
 - (id)initWithCertificateChain:(CFArrayRef)cc forAccount:(AIAccount*)_account;
-- (IBAction)showWindow:(id)sender;
+- (void)showOnWindow:(NSWindow *)parentWindow __attribute__((ns_consumes_self));
 - (void)certificateSheetDidEnd:(SFCertificatePanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
@@ -52,11 +52,20 @@
 
 - (void)editAccountWindow:(NSWindow*)window didOpenForAccount:(AIAccount *)inAccount {
 	SFCertificatePanel *panel = [[SFCertificatePanel alloc] init];
-	[panel beginSheetForWindow:window modalDelegate:self didEndSelector:@selector(certificateSheetDidEnd:returnCode:contextInfo:) contextInfo:(__bridge void *)window certificates:(__bridge NSArray*)certificatechain showGroup:YES];
+
+	[panel beginSheetForWindow:window
+				 modalDelegate:self
+				didEndSelector:@selector(certificateSheetDidEnd:returnCode:contextInfo:)
+				   contextInfo:(__bridge void *)window
+				  certificates:(__bridge NSArray*)certificatechain
+					 showGroup:YES];
 }
 
 - (void)certificateSheetDidEnd:(SFCertificatePanel*)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo {
 	NSWindow *win = (__bridge NSWindow*)contextInfo;
+	
+	panel = nil;
+	
 	[win performSelector:@selector(performClose:) withObject:nil afterDelay:0.0];
 }
 

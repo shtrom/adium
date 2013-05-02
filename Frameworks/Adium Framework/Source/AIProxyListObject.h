@@ -25,6 +25,7 @@
 	NSAttributedString *cachedDisplayName;
 	NSDictionary *cachedLabelAttributes;
 	NSSize cachedDisplayNameSize;
+	NSString *nick;
 }
 @property (nonatomic, copy) NSDictionary *cachedLabelAttributes;
 @property (nonatomic, strong) NSString *cachedDisplayNameString;
@@ -32,6 +33,7 @@
 @property (nonatomic) NSSize cachedDisplayNameSize;
 
 @property (nonatomic, strong) NSString *key;
+@property (nonatomic, strong) NSString *nick;
 
 @property (nonatomic, weak) AIListObject *listObject;
 @property (nonatomic, weak) ESObjectWithProperties <AIContainingObject> * containingObject;
@@ -41,6 +43,10 @@
 
 + (AIProxyListObject *)existingProxyListObjectForListObject:(ESObjectWithProperties *)inListObject
 											   inListObject:(ESObjectWithProperties <AIContainingObject>*)inContainingObject;
+
++ (AIProxyListObject *)proxyListObjectForListObject:(AIListObject *)inListObject
+									   inListObject:(ESObjectWithProperties <AIContainingObject>*)inContainingObject
+										   withNick:(NSString *)inNick;
 
 /*!
  * @brief Called when an AIListObject is done with an AIProxyListObject to remove it from the global dictionary
