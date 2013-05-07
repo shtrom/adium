@@ -184,6 +184,29 @@ static void AMPurpleJabberNode_received_data_cb(PurpleConnection *gc, xmlnode **
 					[delegate jabberNodeGotItems:self];
 			}
 		}
+	
+		if (strcmp(type, "error") == 0) {
+			const char *iqId = xmlnode_get_attrib(*packet, "id");
+			
+			if ([[NSString stringWithUTF8String:iqId] isEqualToString:self.discoIqId]) {
+				
+				self.itemsArray = @[];
+				
+				for (id delegate in self.delegates) {
+					if ([delegate respondsToSelector:@selector(jabberNodeGotItems:)])
+						[delegate jabberNodeGotItems:self];
+				}
+			} else if ([[NSString stringWithUTF8String:iqId] isEqualToString:self.infoIqId]) {
+				
+				self.identities = @[];
+				self.features = [NSSet set];
+				
+				for (id delegate in self.delegates) {
+					if ([delegate respondsToSelector:@selector(jabberNodeGotInfo:)])
+						[delegate jabberNodeGotInfo:self];
+				}
+			}
+		}
 	}
 }
 
@@ -243,7 +266,10 @@ static void AMPurpleJabberNode_received_data_cb(PurpleConnection *gc, xmlnode **
 	[iq addAttribute:[NSXMLNode attributeWithName:@"type" stringValue:@"get"]];
 	if (jid)
 		[iq addAttribute:[NSXMLNode attributeWithName:@"to" stringValue:jid]];
-	[iq addAttribute:[NSXMLNode attributeWithName:@"id" stringValue:[NSString stringWithFormat:@"%@%lu,",[self className], iqCounter++]]];
+	
+	self.discoIqId = [NSString stringWithFormat:@"%@%lu,",[self className], iqCounter++];
+	
+	[iq addAttribute:[NSXMLNode attributeWithName:@"id" stringValue:self.discoIqId]];
 	
 	NSXMLElement *query = [NSXMLNode elementWithName:@"query"];
 	[query addNamespace:[NSXMLNode namespaceWithName:@"" stringValue:@"http://jabber.org/protocol/disco#items"]];
@@ -268,7 +294,9 @@ static void AMPurpleJabberNode_received_data_cb(PurpleConnection *gc, xmlnode **
 	[iq addAttribute:[NSXMLNode attributeWithName:@"type" stringValue:@"get"]];
 	if (jid)
 		[iq addAttribute:[NSXMLNode attributeWithName:@"to" stringValue:jid]];
-	[iq addAttribute:[NSXMLNode attributeWithName:@"id" stringValue:[NSString stringWithFormat:@"%@%lu",[self className], iqCounter++]]];
+	
+	self.infoIqId = [NSString stringWithFormat:@"%@%lu,",[self className], iqCounter++];
+	[iq addAttribute:[NSXMLNode attributeWithName:@"id" stringValue:self.infoIqId]];
 	
 	NSXMLElement *query = [NSXMLNode elementWithName:@"query"];
 	[query addNamespace:[NSXMLNode namespaceWithName:@"" stringValue:@"http://jabber.org/protocol/disco#info"]];
@@ -308,7 +336,7 @@ static void AMPurpleJabberNode_received_data_cb(PurpleConnection *gc, xmlnode **
 	return [commands items];
 }
 
-@synthesize commandsNode = commands, itemsArray = items, identities, features, node, jid, name, gc, delegates;
+@synthesize commandsNode = commands, itemsArray = items, identities, features, node, jid, name, gc, delegates, infoIqId, discoIqId;
 
 - (void)addDelegate:(id<AMPurpleJabberNodeDelegate>)delegate {
 	[delegates addObject:delegate];
