@@ -330,7 +330,7 @@ static void *adiumPurpleRequestFields(const char *title, const char *primary,
 																			  userData:userData];
 		}
 
-		return (__bridge void*)requestController;
+		return CFBridgingRetain(requestController);
 	}
 }
 
