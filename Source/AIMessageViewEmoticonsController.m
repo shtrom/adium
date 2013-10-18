@@ -24,6 +24,8 @@
 
 #define PREFERENCES_GROUP_EMOTICONS	@"Emoticons"
 
+#define MENU_PADDING    15  // Padding between emoticons button and displayed emoticons menu
+
 
 #pragma mark AIMessageViewEmoticonsController
 
@@ -100,6 +102,17 @@
 		
 		// Adjust opening position
 		aPoint.x -= [menu size].width;
+
+        // add padding to prevent button being covered by menu
+        NSPoint screenPoint = [aView.window convertBaseToScreen:aPoint];
+        if (screenPoint.y - MENU_PADDING - [menu size].height < 20) {
+            // position the menu above the button if it would be to near to the screen's bottom edge otherwise
+            // - this prevents the view automatically being repositioned by cocoa and therefore covering the button again
+            aPoint.y = aPoint.y - MENU_PADDING - [menu size].height;
+        }
+        else {
+            aPoint.y += MENU_PADDING/2;
+        }
 
 		[menu popUpMenuPositioningItem:[menu itemAtIndex:0]
 							atLocation:aPoint
