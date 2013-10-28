@@ -116,9 +116,6 @@ static NSString	*prefsCategory;
 	advancedPrefsName = nil;
 	prefsCategory = nil;
 	queuedURLEvents = nil;
-	
-	//Check for a recent crash log
-	[AICrashReporter checkForCrash];
 
     //Ignore SIGPIPE, which is a harmless error signal
     //sent when write() or similar function calls fail due to a broken pipe in the network connection
@@ -224,6 +221,9 @@ static NSString	*prefsCategory;
 	@autoreleasepool {
 		[applescriptabilityController controllerDidLoad];
 		[statusController controllerDidLoad];
+
+		//Check for a recent crash log
+		[AICrashReporter checkForCrash];
 
 		//Open the preferences if we were unable to because application:openFile: was called before we got here
 		[self openAppropriatePreferencesIfNeeded];

@@ -83,6 +83,13 @@
 		
 		if ([activePacks count] > 0) {
 			for (pack in activePacks) {
+				//Add some blank entries to visually separate packs
+				while (icons.count % 10 != 0) {
+					[icons addObject:@""];
+					[titles addObject:@""];
+					[symbols addObject:@""];
+				}
+				
 				for (emoticon in [pack enabledEmoticons]) {
 					[icons addObject:[[emoticon image] imageByScalingForMenuItem]];
 					[titles addObject:[emoticon name]];
@@ -128,7 +135,11 @@
 
 - (BOOL)imageCollectionView:(AIImageCollectionView *)collectionView shouldHighlightItemAtIndex:(NSUInteger)anIndex
 {	
-	return (anIndex < [[self emoticons] count]);
+	if (anIndex >= [[self emoticons] count])
+		return NO;
+	if ([[[self emoticonSymbols] objectAtIndex:anIndex] isEqualToString:@""])
+		return NO;
+	return YES;
 }
 
 - (void)imageCollectionView:(AIImageCollectionView *)collectionView didHighlightItemAtIndex:(NSUInteger)anIndex
@@ -142,7 +153,11 @@
 
 - (BOOL)imageCollectionView:(AIImageCollectionView *)imageCollectionView shouldSelectItemAtIndex:(NSUInteger)anIndex
 {
-	return (anIndex < [[self emoticons] count]);
+	if (anIndex >= [[self emoticons] count])
+		return NO;
+	if ([[[self emoticonSymbols] objectAtIndex:anIndex] isEqualToString:@""])
+		return NO;
+	return YES;
 }
 
 - (void)imageCollectionView:(AIImageCollectionView *)imageCollectionView didSelectItemAtIndex:(NSUInteger)anIndex
