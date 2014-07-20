@@ -26,15 +26,8 @@
 #define ALIASES_DEFAULT_PREFS		@"Alias Defaults"
 #define DISPLAYFORMAT_DEFAULT_PREFS	@"Display Format Defaults"
 
-#define CONTACT_NAME_MENU_TITLE		AILocalizedString(@"Contact Name Format",nil)
-#define ALIAS						AILocalizedString(@"Alias",nil)
-#define ALIAS_SCREENNAME			AILocalizedString(@"Alias (User Name)",nil)
-#define SCREENNAME_ALIAS			AILocalizedString(@"User Name (Alias)",nil)
-#define SCREENNAME					AILocalizedString(@"User Name",nil)
-
 @interface AIAliasSupportPlugin ()
 - (NSSet *)_applyAlias:(NSString *)inAlias toObject:(AIListObject *)inObject notify:(BOOL)notify;
-- (NSMenu *)_contactNameMenu;
 - (void)applyAliasRequested:(NSNotification *)notification;
 @end
 
@@ -60,18 +53,6 @@
 																		forClass:[self class]]
 										  forGroup:PREF_GROUP_DISPLAYFORMAT];
 	
-	//Create the menu item
-	menuItem_contactName = [[NSMenuItem alloc] initWithTitle:CONTACT_NAME_MENU_TITLE
-																				 target:nil
-																				 action:nil
-																		  keyEquivalent:@""];
-	
-	//Add the menu item (which will have _contactNameMenu as its submenu)
-	[adium.menuController addMenuItem:menuItem_contactName toLocation:LOC_View_Additions];
-	
-	menu_contactSubmenu = [self _contactNameMenu];
-	[menuItem_contactName setSubmenu:menu_contactSubmenu];
-
     //Observe preferences changes
     [[NSNotificationCenter defaultCenter] addObserver:self
 								   selector:@selector(applyAliasRequested:)
@@ -88,18 +69,6 @@
     [[AIContactObserverManager sharedManager] unregisterListObjectObserver:self];
 	[adium.preferenceController unregisterPreferenceObserver:self];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-/*!
- * @brief Change the format for the long display name used in the contact list
- *
- * @param sender An NSMenuItem which was clicked. Its tag should be an AIDisplayNameType.
- */
--(IBAction)changeFormat:(id)sender
-{
-	[adium.preferenceController setPreference:[NSNumber numberWithInteger:[sender tag]]
-										 forKey:@"Long Display Format"
-										  group:PREF_GROUP_DISPLAYFORMAT];
 }
 
 /*!
@@ -129,15 +98,9 @@
 - (void)preferencesChangedForGroup:(NSString *)group key:(NSString *)key
 							object:(AIListObject *)object preferenceDict:(NSDictionary *)prefDict firstTime:(BOOL)firstTime
 {
-	//Clear old checkmark
-	[[menu_contactSubmenu itemWithTag:displayFormat] setState:NSOffState];
-	
 	//Load new displayFormat
-	displayFormat = [[prefDict objectForKey:@"Long Display Format"] integerValue]; 
-	
-	//Set new checkmark
-	[[menu_contactSubmenu itemWithTag:displayFormat] setState:NSOnState];
-	
+	displayFormat = [[prefDict objectForKey:@"Long Display Format"] integerValue];
+
 	if (firstTime) {
 		//Register ourself as a handle observer
 		[[AIContactObserverManager sharedManager] registerListObjectObserver:self];
@@ -253,50 +216,6 @@
 	}
 	
 	return modifiedAttributes;
-}
-
-/*!
- * @brief Generate the menu of long display name format choices
- *
- * @result The autoreleased menu
- */
-- (NSMenu *)_contactNameMenu
-{
-	
-	NSMenu		*choicesMenu;
-	NSMenuItem  *menuItem;
-	
-	choicesMenu = [[NSMenu alloc] initWithTitle:@""];
-	
-    menuItem = [[NSMenuItem alloc] initWithTitle:ALIAS
-																	 target:self
-																	 action:@selector(changeFormat:)
-															  keyEquivalent:@""];
-    [menuItem setTag:AINameFormat_DisplayName];
-    [choicesMenu addItem:menuItem];
-	
-    menuItem = [[NSMenuItem alloc] initWithTitle:ALIAS_SCREENNAME
-																	 target:self
-																	 action:@selector(changeFormat:)
-															  keyEquivalent:@""];
-    [menuItem setTag:AINameFormat_DisplayName_ScreenName];
-    [choicesMenu addItem:menuItem];
-	
-    menuItem = [[NSMenuItem alloc] initWithTitle:SCREENNAME_ALIAS
-																	 target:self
-																	 action:@selector(changeFormat:)
-															  keyEquivalent:@""];
-    [menuItem setTag:AINameFormat_ScreenName_DisplayName];
-    [choicesMenu addItem:menuItem];
-	
-    menuItem = [[NSMenuItem alloc] initWithTitle:SCREENNAME
-																	 target:self
-																	 action:@selector(changeFormat:)
-															  keyEquivalent:@""];
-    [menuItem setTag:AINameFormat_ScreenName];
-    [choicesMenu addItem:menuItem];
-	
-	return choicesMenu;
 }
 
 @end

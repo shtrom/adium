@@ -445,7 +445,7 @@
 	[statusMenuView setTitle:(title ? title : @"")];
 	/*
 	 [statusMenuView setImage:[activeStatus iconOfType:AIStatusIconList
-	 direction:AIIconFlipped]];
+	 direction:AIIconNormal]];
 	 */
 	[imageView_status setImage:[activeStatus iconOfType:AIStatusIconList
 											  direction:AIIconNormal]];

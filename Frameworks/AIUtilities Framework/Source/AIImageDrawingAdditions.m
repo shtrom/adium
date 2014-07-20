@@ -61,10 +61,18 @@
 - (NSImage *)imageByScalingToSize:(NSSize)size DPI:(CGFloat)dpi
 {
 	CGFloat backingScaleFactor = dpi / 72.0;
-	
-	if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
-		backingScaleFactor /= [[NSScreen mainScreen] backingScaleFactor];
-	}
+    
+    CGFloat screenScalingFactor = 1.0;
+    
+    for(NSScreen* screen in [NSScreen screens]) {
+        if ([screen respondsToSelector:@selector(backingScaleFactor)]) {
+            if([screen backingScaleFactor] > screenScalingFactor) {
+                screenScalingFactor = [screen backingScaleFactor];
+            }
+        }
+    }
+    
+    backingScaleFactor /= screenScalingFactor;
 	
 	return ([self imageByScalingToSize:NSMakeSize(size.width * backingScaleFactor, size.height * backingScaleFactor) fraction:1.0f flipImage:NO proportionally:YES allowAnimation:YES]);
 }
@@ -113,10 +121,6 @@
 		
 		newRect = NSMakeRect(0.0f, 0.0f, size.width, size.height);
 		newImage = [[NSImage alloc] initWithSize:size];
-		
-		if (flipImage) {
-			[newImage setFlipped:YES];		
-		}
 		
 		NSImageRep *bestRep;
 		
@@ -222,10 +226,6 @@
 		
 		NSImage *newImage = [[NSImage alloc] initWithSize:size];
 		NSImage *scaledImage = [[NSImage alloc] initWithSize:scaleSize];
-		
-		if (flipImage) {
-			[newImage setFlipped:YES];		
-		}
 		
 		NSImageRep *bestRep;
 		
@@ -339,7 +339,9 @@
 	[self drawInRect:drawRect
 			fromRect:NSMakeRect(0, 0, ownSize.width, ownSize.height)
 		   operation:NSCompositeSourceOver
-			fraction:inFraction];
+			fraction:inFraction
+	  respectFlipped:YES
+			   hints:nil];
 	
 	// Shift the origin if needed, and decrease the available destination rect width, by the passed size
 	// (which may exceed the actual image dimensions)
@@ -441,7 +443,9 @@
 	[self drawInRect:drawRect
 			fromRect:NSMakeRect(0, 0, ownSize.width, ownSize.height)
 		   operation:NSCompositeSourceOver
-			fraction:inFraction];
+			fraction:inFraction
+	  respectFlipped:YES
+			   hints:nil];
 	
 	[NSGraphicsContext restoreGraphicsState];
 	

@@ -47,7 +47,7 @@
     AIListContact    *listObject = [chat contactForNick:proxyObject.nick];
 	return [AIStatusIcons statusIconForListObject:(AIListObject *)listObject
 											 type:AIStatusIconTab
-										direction:AIIconFlipped];
+										direction:AIIconNormal];
 }
 
 - (NSColor *)textColor

@@ -224,8 +224,6 @@ static AIContactInfoWindowController *sharedContactInfoInstance = nil;
 		}		
 		
 		[inspectorToolbar setToolTip:segmentLabel forCell:[inspectorToolbar cellAtRow:0 column:i]];
-		
-		[segmentImage setDataRetained:YES];
 		[[inspectorToolbar cellAtRow:0 column:i] setImage:segmentImage];
 	}	
 }

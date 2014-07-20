@@ -1590,7 +1590,7 @@
 											 range:NSMakeRange(0, mutableMessage.length)];
 	}];
 	
-	NSString *message = [mutableMessage string];
+	NSString *message = [[mutableMessage string] copy];
 	
 	BOOL replyTweet = (replyTweetID.length > 0);
 	BOOL tweetLink = (tweetID.length && userID.length);

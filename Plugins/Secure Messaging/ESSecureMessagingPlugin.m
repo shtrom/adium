@@ -33,6 +33,7 @@
 
 #define	TITLE_MAKE_SECURE		AILocalizedString(@"Initiate Encrypted OTR Chat",nil)
 #define	TITLE_MAKE_INSECURE		AILocalizedString(@"Cancel Encrypted Chat",nil)
+#define	TITLE_REFRESH_SECURE	AILocalizedString(@"Refresh Encrypted Chat",nil)
 #define TITLE_SHOW_DETAILS		[AILocalizedString(@"Show Details",nil) stringByAppendingEllipsis]
 #define TITLE_VERIFY			AILocalizedString(@"Verify",nil)
 #define TITLE_VERIFY_MANUALLY	[AILocalizedString(@"Manually",nil) stringByAppendingEllipsis]
@@ -363,15 +364,24 @@
 									inChat:chat];
 }
 
+- (IBAction)refreshSecureMessaging:(id)sender
+{
+	AIChat	*chat = adium.interfaceController.activeChat;
+	
+	[chat.account requestSecureMessaging:TRUE
+								  inChat:chat];
+}
+
 - (IBAction)showDetails:(id)sender
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-security"
 	NSRunInformationalAlertPanel(AILocalizedString(@"Details",nil),
-								 [[adium.interfaceController.activeChat securityDetails] objectForKey:@"Description"],
+								 @"%@",
 								 AILocalizedString(@"OK",nil),
 								 nil,
-								 nil);
+								 nil,
+								 [[adium.interfaceController.activeChat securityDetails] objectForKey:@"Description"]);
 #pragma GCC diagnostic pop
 }
 
@@ -406,10 +416,11 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-security"
 		NSRunInformationalAlertPanel(AILocalizedString(@"About Encryption",nil),
-									 aboutEncryption,
+									 @"%@",
 									 AILocalizedString(@"OK",nil),
 									 nil,
-									 nil);
+									 nil,
+									 aboutEncryption);
 #pragma GCC diagnostic pop
 	}
 }
@@ -494,6 +505,7 @@
 
 				return YES;
 				
+			case AISecureMessagingMenu_Refresh:
 			case AISecureMessagingMenu_ShowDetails:
 			case AISecureMessagingMenu_VerifyManually:
 			case AISecureMessagingMenu_VerifyQuestion:
@@ -526,6 +538,13 @@
 										   action:@selector(toggleSecureMessaging:)
 									keyEquivalent:@""];
 		[item setTag:AISecureMessagingMenu_Toggle];
+		[_secureMessagingMenu addItem:item];
+		
+		item = [[NSMenuItem alloc] initWithTitle:TITLE_REFRESH_SECURE
+										   target:self
+										   action:@selector(refreshSecureMessaging:)
+									keyEquivalent:@""];
+		[item setTag:AISecureMessagingMenu_Refresh];
 		[_secureMessagingMenu addItem:item];
 		
 		item = [[NSMenuItem alloc] initWithTitle:TITLE_SHOW_DETAILS

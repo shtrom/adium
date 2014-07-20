@@ -135,8 +135,7 @@
 - (void)setBackgroundImage:(NSImage *)inImage
 {
 	if (backgroundImage != inImage) {
-		backgroundImage = inImage;		
-		[backgroundImage setFlipped:YES];
+		backgroundImage = inImage;
 	}
 	
 	[(NSClipView *)[self superview] setCopiesOnScroll:(!backgroundImage)];

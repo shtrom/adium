@@ -744,4 +744,9 @@ NSInteger statusSort(id objA, id objB, BOOL groups, id<AIContainingObject> conta
 	return &statusSort;
 }
 
+- (IBAction)closeSheet:(id)sender
+{
+	[NSApp endSheet:configureView.window];
+}
+
 @end

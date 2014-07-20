@@ -15,15 +15,15 @@
  */
 
 #import <Adium/AIWindowController.h>
+#import <Adium/AIContactControllerProtocol.h>
+@class AIAlternatingRowTableView;
 
-@class AISortController;
-
-@interface ESContactSortConfigurationWindowController : AIWindowController {
-	IBOutlet	NSView  *view_main;
+@interface AIHideAccountsWindowController : AIWindowController {
+	NSArray *accounts;
+	NSMutableArray *array_hideAccounts;
+	IBOutlet AIAlternatingRowTableView *tableView;
 }
 
-+ (id)showSortConfigurationWindowForController:(AISortController *)controller;
-+ (BOOL)sortConfigurationIsOpen;
-- (void)configureForController:(AISortController *)controller;
+- (IBAction)done:(id)sender;
 
 @end

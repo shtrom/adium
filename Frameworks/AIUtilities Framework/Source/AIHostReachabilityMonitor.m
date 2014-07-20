@@ -41,6 +41,7 @@
 @end
 
 @implementation AIHostReachabilityMonitor
+@synthesize AI_hostsBeforeSleep, AI_observersBeforeSleep;
 
 #pragma mark Shared instance management
 
@@ -101,6 +102,8 @@
 	hosts          = nil;
 	observers      = nil;
 	reachabilities = nil;
+	AI_hostsBeforeSleep = nil;
+	AI_observersBeforeSleep = nil;
 	
 	unconfiguredHostsAndObservers = nil;
 	[hostAndObserverListLock unlock];
@@ -624,6 +627,9 @@ static OSStatus CreateIPAddressListChangeCallbackSCF(SCDynamicStoreCallBack call
 		CFRelease(ipChangesRunLoopSourceRef);
 		ipChangesRunLoopSourceRef = nil;
 	}
+
+	self.AI_hostsBeforeSleep = nil;
+	self.AI_observersBeforeSleep = nil;
 }
 
 #pragma mark -
