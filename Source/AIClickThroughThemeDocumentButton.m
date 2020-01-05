@@ -15,6 +15,8 @@
  */
 
 #import "AIClickThroughThemeDocumentButton.h"
+#include <AvailabilityMacros.h>
+
 
 /*!
  * @class AIClickThroughThemeDocumentButton
@@ -46,7 +48,12 @@
 	 */		
 	if (!inLeftMouseEvent) {
 		//Grab the mouse location in global coordinates
-		originalMouseLocation = [window convertPointFromScreen:[theEvent locationInWindow]];
+
+    #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+      originalMouseLocation = [window convertPointToScreen:[theEvent locationInWindow]];
+    #else
+      originalMouseLocation = [window convertBaseToScreen:[theEvent locationInWindow]];
+    #endif
 		windowFrame = [window frame];
 		inLeftMouseEvent = YES;		
 	}
@@ -77,7 +84,11 @@
 	NSWindow	*window = [self window];
 
 	//grab the mouse location in global coordinates
-	originalMouseLocation = [window convertPointFromScreen:[theEvent locationInWindow]];
+  #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+    originalMouseLocation = [window convertPointToScreen:[theEvent locationInWindow]];
+  #else
+    originalMouseLocation = [window convertBaseToScreen:[theEvent locationInWindow]];
+  #endif
 	windowFrame = [window frame];
 	inLeftMouseEvent = YES;
 }

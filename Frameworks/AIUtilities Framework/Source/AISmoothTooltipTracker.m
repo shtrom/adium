@@ -276,18 +276,48 @@
 #if LOG_TRACKING_INFO
 	NSLog(@"%@: Visible: %i ; Point %@ in %@ = %i", self,
 		  [[view window] isVisible],
-/*		  NSStringFromPoint([[view superview] convertPoint:[[view window] convertPointFromScreen:mouseLocation] fromView:[[view window] contentView]]),*/
-		  NSStringFromPoint([[view window] convertPointFromScreen:mouseLocation]),
+/*
+      #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+        NSStringFromPoint([[view superview] convertPoint:[[view window] convertPointToScreen:mouseLocation] fromView:[[view window] contentView]]),
+      #else
+        NSStringFromPoint([[view superview] convertPoint:[[view window] convertBaseToScreen:mouseLocation] fromView:[[view window] contentView]]),
+      #endif
+*/
+      #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+        NSStringFromPoint([[view window] convertPointFromScreen:mouseLocation]),
+      #else
+        NSStringFromPoint([[view window] convertBaseToScreen:mouseLocation]),
+      #endif
 /*		  NSStringFromRect([view frame]),*/
 		  NSStringFromRect([[[view window] contentView] convertRect:[view frame] fromView:[view superview]]),
-/*		  NSPointInRect([[view window] convertPointFromScreen:mouseLocation], [view frame])*/
-		  /*NSPointInRect([[view superview] convertPoint:[[view window] convertPointFromScreen:mouseLocation] fromView:[[view window] contentView]],[view frame])*/
-		  NSPointInRect([[view window] convertPointFromScreen:mouseLocation],[[[view window] contentView] convertRect:[view frame] fromView:[view superview]]));
+/*
+      #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+        NSPointInRect([[view window] convertPointFromScreen:mouseLocation], [view frame])
+      #else
+        NSPointInRect([[view window] convertBaseToScreen:mouseLocation], [view frame])
+      #endif
+*/
+		  /*
+      #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+        NSPointInRect([[view superview] convertPoint:[[view window] convertPointToScreen:mouseLocation] fromView:[[view window] contentView]],[view frame])
+      #else
+        NSPointInRect([[view superview] convertPoint:[[view window] convertBaseToScreen:mouseLocation] fromView:[[view window] contentView]],[view frame])
+      #endif
+      */
+      #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+        NSPointInRect([[view window] convertPointToScreen:mouseLocation],[[[view window] contentView] convertRect:[view frame] fromView:[view superview]]));
+      #else
+        NSPointInRect([[view window] convertBaseToScreen:mouseLocation],[[[view window] contentView] convertRect:[view frame] fromView:[view superview]]));
+      #endif
 #endif
 	
 	if ([theWindow isVisible] && 
-	   NSPointInRect([theWindow convertPointFromScreen:mouseLocation],[[theWindow contentView] convertRect:[view frame] fromView:[view superview]]) &&
-		[theWindow isOnActiveSpace]) {
+     #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+       NSPointInRect([theWindow convertPointToScreen:mouseLocation],[[theWindow contentView] convertRect:[view frame] fromView:[view superview]])
+     #else
+       NSPointInRect([theWindow convertBaseToScreen:mouseLocation],[[theWindow contentView] convertRect:[view frame] fromView:[view superview]])
+     #endif
+  && [theWindow isOnActiveSpace]) {
 		//tooltipCount is used for delaying the appearence of tooltips.  We reset it to 0 when the mouse moves.  When
 		//the mouse is left still tooltipCount will eventually grow greater than TOOL_TIP_DELAY, and we will begin
 		//displaying the tooltips

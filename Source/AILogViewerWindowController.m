@@ -2297,7 +2297,7 @@ static NSInteger toArraySort(id itemA, id itemB, void *context)
 
 - (void)installToolbar
 {	
-	[NSBundle loadNibNamed:[self dateItemNibName] owner:self];
+	[NSBundle loadNibNamed:[self dateItemNibName] owner:self ];
 
     NSToolbar 		*toolbar = [[[NSToolbar alloc] initWithIdentifier:TOOLBAR_LOG_VIEWER] autorelease];
     NSToolbarItem	*toolbarItem;

@@ -947,9 +947,14 @@ static NSString *AIWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
 
 	if (showTooltips && ([NSApp isActive] || (showTooltipsInBackground && ![contactListView.window hidesOnDeactivate]))) {
 		NSRect		contactListFrame = contactListView.frame;
-		NSPoint		viewPoint = [contactListView convertPoint:[contactListView.window convertPointFromScreen:screenPoint]
-													 fromView:nil];
-		
+    #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+      NSPoint    viewPoint = [contactListView convertPoint:[contactListView.window convertPointToScreen:screenPoint]
+                             fromView:nil];
+    #else
+      NSPoint    viewPoint = [contactListView convertPoint:[contactListView.window convertBaseToScreen:screenPoint]
+                             fromView:nil];
+    #endif
+
 		//Be sure that screen points outside our view return nil, since no contact is being hovered.
 		if (viewPoint.x > NSMinX(contactListFrame) && viewPoint.x < NSMaxX(contactListFrame)) {
 			listObject = ((AIProxyListObject *)[contactListView itemAtRow:[contactListView rowAtPoint:viewPoint]]).listObject;

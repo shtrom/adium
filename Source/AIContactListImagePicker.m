@@ -220,8 +220,13 @@
 			trackRect.size.width = myFrame.size.width;
 		}
 		
-		NSPoint	localPoint = [self convertPoint:[[self window] convertPointFromScreen:[NSEvent mouseLocation]]
-									   fromView:nil];
+    #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+      NSPoint  localPoint = [self convertPoint:[[self window] convertPointToScreen:[NSEvent mouseLocation]]
+                       fromView:nil];
+    #else
+      NSPoint  localPoint = [self convertPoint:[[self window] convertBaseToScreen:[NSEvent mouseLocation]]
+                       fromView:nil];
+    #endif
 		BOOL	mouseInside = NSPointInRect(localPoint, myFrame);
 
 		trackingTag = [self addTrackingRect:trackRect owner:self userData:nil assumeInside:mouseInside];

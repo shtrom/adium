@@ -128,9 +128,12 @@
 			(inModifiedKeys == nil || [inModifiedKeys containsObject:KEY_UNVIEWED_CONTENT])) {
 			NSInteger unviewedContent = [inObject integerValueForProperty:KEY_UNVIEWED_CONTENT];
 			
-			if (unviewedContent && ![flashingListObjects containsObject:inObject]) { //Start flashing
+			if (   unviewedContent
+        && ! [flashingListObjects containsObject:inObject]) { //Start flashing
 				[self addToFlashSet:inObject];
-			} else if (!unviewedContent && [flashingListObjects containsObject:inObject]) { //Stop flashing
+			}
+      else if ( ! unviewedContent
+             &&   [flashingListObjects containsObject:inObject]) { //Stop flashing
 				[self removeFromFlashSet:inObject];
 			}
 		}

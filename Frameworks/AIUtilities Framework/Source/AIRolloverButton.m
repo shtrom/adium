@@ -117,8 +117,13 @@
 	if ([self superview] && [self window]) {
 		NSRect	myFrame = [self frame];
 		NSRect	trackRect = NSMakeRect(0, 0, myFrame.size.width, myFrame.size.height);
-		NSPoint	localPoint = [self convertPoint:[[self window] convertPointFromScreen:[NSEvent mouseLocation]]
-									   fromView:[self superview]];
+    #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+      NSPoint  localPoint = [self convertPoint:[[self window] convertPointToScreen:[NSEvent mouseLocation]]
+                       fromView:[self superview]];
+    #else
+      NSPoint  localPoint = [self convertPoint:[[self window] convertBaseToScreen:[NSEvent mouseLocation]]
+                       fromView:[self superview]];
+    #endif
 		BOOL	mouseInside = NSPointInRect(localPoint, myFrame);
 		
 		trackingTag = [self addTrackingRect:trackRect owner:self userData:nil assumeInside:mouseInside];
